@@ -1,0 +1,2851 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prism Table Studio | shadcn/ui</title>
+  
+  <!-- Inter Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: ["class", '[data-theme="dark"]'],
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+          },
+          colors: {
+            border: "hsl(var(--border) / <alpha-value>)",
+            input: "hsl(var(--input) / <alpha-value>)",
+            ring: "hsl(var(--ring) / <alpha-value>)",
+            background: "hsl(var(--background) / <alpha-value>)",
+            foreground: "hsl(var(--foreground) / <alpha-value>)",
+            primary: {
+              DEFAULT: "hsl(var(--primary) / <alpha-value>)",
+              foreground: "hsl(var(--primary-foreground) / <alpha-value>)",
+            },
+            secondary: {
+              DEFAULT: "hsl(var(--secondary) / <alpha-value>)",
+              foreground: "hsl(var(--secondary-foreground) / <alpha-value>)",
+            },
+            destructive: {
+              DEFAULT: "hsl(var(--destructive) / <alpha-value>)",
+              foreground: "hsl(var(--destructive-foreground) / <alpha-value>)",
+            },
+            muted: {
+              DEFAULT: "hsl(var(--muted) / <alpha-value>)",
+              foreground: "hsl(var(--muted-foreground) / <alpha-value>)",
+            },
+            accent: {
+              DEFAULT: "hsl(var(--accent) / <alpha-value>)",
+              foreground: "hsl(var(--accent-foreground) / <alpha-value>)",
+            },
+            popover: {
+              DEFAULT: "hsl(var(--popover) / <alpha-value>)",
+              foreground: "hsl(var(--popover-foreground) / <alpha-value>)",
+            },
+            card: {
+              DEFAULT: "hsl(var(--card) / <alpha-value>)",
+              foreground: "hsl(var(--card-foreground) / <alpha-value>)",
+            },
+          },
+          borderRadius: {
+            lg: "var(--radius)",
+            md: "calc(var(--radius) - 2px)",
+            sm: "calc(var(--radius) - 4px)",
+          },
+        },
+      },
+    }
+  </script>
+
+  <style>
+    :root {
+      --background: 0 0% 100%;
+      --foreground: 222.2 84% 4.9%;
+      --card: 0 0% 100%;
+      --card-foreground: 222.2 84% 4.9%;
+      --popover: 0 0% 100%;
+      --popover-foreground: 222.2 84% 4.9%;
+      --primary: 222.2 47.4% 11.2%;
+      --primary-foreground: 210 40% 98%;
+      --secondary: 210 40% 96.1%;
+      --secondary-foreground: 222.2 47.4% 11.2%;
+      --muted: 210 40% 96.1%;
+      --muted-foreground: 215.4 16.3% 46.9%;
+      --accent: 210 40% 96.1%;
+      --accent-foreground: 222.2 47.4% 11.2%;
+      --destructive: 0 84.2% 60.2%;
+      --destructive-foreground: 210 40% 98%;
+      --border: 214.3 31.8% 91.4%;
+      --input: 214.3 31.8% 91.4%;
+      --ring: 222.2 84% 4.9%;
+      --radius: 0.5rem;
+
+      --canvas-bg: #f8fafc;
+      --canvas-grid: #e2e8f0;
+      --prism-color: #0284c7;
+      --cross-color: #6366f1;
+    }
+
+    [data-theme="dark"] {
+      --background: 222.2 84% 4.9%;
+      --foreground: 210 40% 98%;
+      --card: 222.2 84% 4.9%;
+      --card-foreground: 210 40% 98%;
+      --popover: 222.2 84% 4.9%;
+      --popover-foreground: 210 40% 98%;
+      --primary: 210 40% 98%;
+      --primary-foreground: 222.2 47.4% 11.2%;
+      --secondary: 217.2 32.6% 17.5%;
+      --secondary-foreground: 210 40% 98%;
+      --muted: 217.2 32.6% 17.5%;
+      --muted-foreground: 215 20.2% 65.1%;
+      --accent: 217.2 32.6% 17.5%;
+      --accent-foreground: 210 40% 98%;
+      --destructive: 0 62.8% 30.6%;
+      --destructive-foreground: 210 40% 98%;
+      --border: 217.2 32.6% 17.5%;
+      --input: 217.2 32.6% 17.5%;
+      --ring: 212.7 26.8% 83.9%;
+
+      --canvas-bg: #090d16;
+      --canvas-grid: #1e293b;
+      --prism-color: #38bdf8;
+      --cross-color: #818cf8;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      user-select: none;
+      overflow: hidden;
+    }
+
+    /* Custom Canvas & Curves */
+    #canvasViewport {
+      background-color: var(--canvas-bg);
+      background-image: radial-gradient(var(--canvas-grid) 1.5px, transparent 1.5px);
+      background-size: 24px 24px;
+    }
+    #canvasViewport.panning { cursor: grab; }
+    #canvasViewport.panning:active { cursor: grabbing; }
+
+    #connectionsSvg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 1px;
+      height: 1px;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    .jev-link-line {
+      fill: none;
+      stroke-width: 2.5px;
+      pointer-events: stroke;
+      cursor: pointer;
+      transition: stroke-width 0.15s ease, filter 0.15s ease;
+    }
+    .jev-link-prism {
+      stroke: var(--prism-color);
+      stroke-dasharray: 6 3;
+    }
+    .jev-link-cross {
+      stroke: var(--cross-color);
+    }
+    .jev-link-line:hover {
+      stroke-width: 4.5px;
+      filter: drop-shadow(0 0 6px rgba(56, 189, 248, 0.8));
+    }
+
+    /* Table Canvas Cards */
+    .canvas-card {
+      position: absolute;
+      transition: box-shadow 0.15s ease, border-color 0.15s ease;
+      touch-action: none;
+    }
+    .canvas-card.active-card {
+      border-color: hsl(var(--primary));
+      box-shadow: 0 0 0 2px hsl(var(--ring)), 0 12px 30px rgba(0,0,0,0.12);
+    }
+
+    /* Row Anchor Dot */
+    .row-anchor {
+      display: inline-block;
+      width: 7px;
+      height: 7px;
+      border-radius: 9999px;
+      background: var(--prism-color);
+      margin-right: 6px;
+    }
+    .row-anchor.anchor-dom {
+      background: #10b981;
+      box-shadow: 0 0 6px #10b981;
+    }
+
+    /* Contenteditable focus state */
+    .cell-editable {
+      outline: none;
+      user-select: text;
+    }
+    .cell-editable:focus {
+      background: hsl(var(--muted));
+      outline: 1.5px solid hsl(var(--ring));
+      border-radius: 2px;
+    }
+
+    /* Hover delete buttons */
+    .row-num-cell .btn-row-del {
+      display: none;
+    }
+    tr:hover .row-num-cell .btn-row-del {
+      display: inline-flex;
+    }
+    th .col-del-btn {
+      display: none;
+    }
+    th:hover .col-del-btn {
+      display: inline-flex;
+    }
+
+    /* Slide-in Conveyor & Chat Drawers */
+    #conveyorPanel, #chatPanel {
+      transform: translateX(100%);
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    #conveyorPanel.open, #chatPanel.open {
+      transform: translateX(0);
+    }
+
+    /* Toast */
+    #toast {
+      opacity: 0;
+      transform: translateY(16px);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      pointer-events: none;
+    }
+    #toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body class="bg-background text-foreground flex flex-col h-screen w-screen overflow-hidden">
+
+  <!-- ==================== SHADCN/UI HEADER ==================== -->
+  <header class="h-14 border-b border-border bg-card/95 backdrop-blur-md px-4 flex items-center justify-between gap-3 z-30 shrink-0">
+    <!-- Brand Title & Badges -->
+    <div class="flex items-center gap-3">
+      <div class="flex items-center gap-2 font-bold text-sm tracking-tight text-foreground">
+        <span class="flex items-center justify-center w-7 h-7 rounded-lg bg-primary text-primary-foreground shadow-xs">
+          <i data-lucide="table-2" class="w-4 h-4"></i>
+        </span>
+        <span>Prism Studio</span>
+      </div>
+
+      <div class="hidden md:flex items-center gap-1.5">
+        <span class="inline-flex items-center gap-1 rounded-md border border-sky-200 bg-sky-50 dark:bg-sky-950/60 dark:border-sky-800 px-2 py-0.5 text-[11px] font-semibold text-sky-700 dark:text-sky-300">
+          <i data-lucide="sparkles" class="w-3 h-3"></i> Jev System One
+        </span>
+        <span class="inline-flex items-center gap-1 rounded-md border border-rose-200 bg-rose-50 dark:bg-rose-950/60 dark:border-rose-800 px-2 py-0.5 text-[11px] font-semibold text-rose-700 dark:text-rose-300">
+          <i data-lucide="bot" class="w-3 h-3"></i> DuckAI Multi-Model
+        </span>
+      </div>
+    </div>
+
+    <!-- Actions Toolbar (Только глобальные инструменты без дубликатов ПКМ) -->
+    <div class="flex items-center gap-2 overflow-x-auto py-1">
+      <span class="hidden xl:inline-flex items-center gap-1.5 text-xs text-muted-foreground mr-1">
+        <kbd class="px-1.5 py-0.5 rounded border border-border bg-muted text-[10px] font-mono font-medium">ПКМ</kbd> меню действий на холсте и строках
+      </span>
+
+      <!-- Storage & Export Menu -->
+      <button onclick="exportTablesJson()" title="Экспорт холста в JSON" class="inline-flex items-center gap-1.5 whitespace-nowrap rounded-md text-xs font-medium border border-input bg-background hover:bg-accent hover:text-accent-foreground h-8 px-2.5 shadow-xs transition-colors">
+        <i data-lucide="download" class="w-3.5 h-3.5"></i> JSON
+      </button>
+      <button onclick="exportCanvasMarkdown()" title="Экспорт таблиц и связей в Markdown" class="inline-flex items-center gap-1.5 whitespace-nowrap rounded-md text-xs font-medium border border-input bg-background hover:bg-accent hover:text-accent-foreground h-8 px-2.5 shadow-xs transition-colors">
+        <i data-lucide="file-text" class="w-3.5 h-3.5"></i> MD
+      </button>
+      <button onclick="triggerImportJson()" title="Импорт JSON файла" class="inline-flex items-center gap-1.5 whitespace-nowrap rounded-md text-xs font-medium border border-input bg-background hover:bg-accent hover:text-accent-foreground h-8 px-2.5 shadow-xs transition-colors">
+        <i data-lucide="upload" class="w-3.5 h-3.5"></i> Импорт
+      </button>
+      <input type="file" id="importJsonFileInput" accept=".json" style="display: none;" onchange="handleImportJsonFile(event)">
+      
+      <button onclick="resetToDefaultTables()" title="Сбросить холст к исходным демо-таблицам" class="inline-flex items-center justify-center rounded-md text-xs font-medium hover:bg-destructive/10 text-muted-foreground hover:text-destructive h-8 w-8 transition-colors">
+        <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+      </button>
+
+      <div class="h-4 w-px bg-border mx-1"></div>
+
+      <!-- Zoom Controls -->
+      <div class="inline-flex items-center rounded-md border border-input bg-background p-0.5 shadow-xs">
+        <button onclick="changeZoom(-0.1)" class="h-7 w-7 inline-flex items-center justify-center rounded-sm hover:bg-accent text-foreground text-xs font-bold transition-colors">-</button>
+        <span id="zoomPercent" class="px-2 text-[11px] font-mono font-medium text-muted-foreground">100%</span>
+        <button onclick="changeZoom(0.1)" class="h-7 w-7 inline-flex items-center justify-center rounded-sm hover:bg-accent text-foreground text-xs font-bold transition-colors">+</button>
+      </div>
+
+      <div class="h-4 w-px bg-border mx-1"></div>
+
+      <!-- Theme Toggle -->
+      <button id="themeBtn" onclick="toggleTheme()" title="Сменить тему оформления" class="inline-flex items-center justify-center rounded-md text-xs font-medium border border-input bg-background hover:bg-accent h-8 w-8 shadow-xs transition-colors">
+        <i data-lucide="moon" class="w-4 h-4"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- ==================== INFINITE CANVAS VIEWPORT ==================== -->
+  <div id="canvasViewport" class="flex-1 relative overflow-hidden cursor-default">
+    <div id="canvasSpace" class="absolute top-0 left-0 origin-top-left will-change-transform">
+      <svg id="connectionsSvg">
+        <defs>
+          <marker id="prismMarker" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#0284c7" />
+          </marker>
+          <marker id="crossMarker" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#6366f1" />
+          </marker>
+        </defs>
+        <g id="jevLinesGroup"></g>
+      </svg>
+      <div id="cardsGroup"></div>
+    </div>
+  </div>
+
+  <!-- ==================== SHADCN SHEET / CONVEYOR DRAWER ==================== -->
+  <aside id="conveyorPanel" class="fixed top-14 right-0 bottom-0 w-[540px] z-40 bg-card border-l border-border shadow-2xl flex flex-col">
+    <div class="flex items-center justify-between px-5 py-4 border-b border-border bg-muted/40">
+      <div class="flex items-center gap-2.5">
+        <div class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></div>
+        <h3 class="text-sm font-semibold tracking-tight text-foreground">Связующие Линии Jev & Анализ</h3>
+        <span id="conveyorStatusBadge" class="rounded-md border border-sky-300 bg-sky-50 dark:bg-sky-950/60 dark:border-sky-800 text-sky-700 dark:text-sky-300 px-2 py-0.5 text-[11px] font-semibold">Готов</span>
+      </div>
+      <button onclick="toggleConveyorPanel()" class="h-8 w-8 inline-flex items-center justify-center rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
+        <i data-lucide="x" class="w-4 h-4"></i>
+      </button>
+    </div>
+    
+    <div id="conveyorContent" class="flex-1 overflow-y-auto p-5 space-y-4 text-xs">
+      <div class="text-center py-16 text-muted-foreground">
+        <i data-lucide="network" class="w-10 h-10 mx-auto text-muted-foreground/40 mb-3"></i>
+        <p class="font-medium text-foreground">Связующие линии еще не рассчитаны</p>
+        <p class="mt-1 text-xs">Нажмите кнопку <strong class="text-emerald-600 dark:text-emerald-400">«⚡ Сформировать Линии Строка-к-Строке (Jev)»</strong> в шапке для автоматического установления связей.</p>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ==================== SHADCN SHEET / AI ЧАТ-ГЕНЕРАТОР ==================== -->
+  <aside id="chatPanel" class="fixed top-14 right-0 bottom-0 w-[640px] max-w-full z-40 bg-card border-l border-border shadow-2xl flex flex-col">
+    <!-- Chat Header -->
+    <div class="flex items-center justify-between px-4 py-3 border-b border-border bg-muted/40 shrink-0">
+      <div class="flex items-center gap-2.5">
+        <span class="flex items-center justify-center w-7 h-7 rounded-lg bg-violet-600 text-white shadow-2xs">
+          <i data-lucide="bot" class="w-4 h-4"></i>
+        </span>
+        <div>
+          <h3 class="text-xs font-bold text-foreground leading-tight">AI Диалог и Генерация Таблиц</h3>
+          <p class="text-[10px] text-muted-foreground">Обсуждайте, выбирайте строки и переносите на холст</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <select id="chatModelSelect" class="flex h-8 rounded-md border border-input bg-background px-2 text-[11px] font-semibold shadow-2xs">
+          <option value="gpt-6-luna">⚡ GPT-6 Luna</option>
+          <option value="gpt-5.4-mini">🚀 GPT-5.4 mini</option>
+          <option value="claude-haiku-4-5">🧠 Claude Haiku 4.5</option>
+          <option value="mistral-small-2603">🌪 Mistral Small 4</option>
+          <option value="tinfoil/gpt-oss-120b">🛡 gpt-oss 120B</option>
+          <option value="tinfoil/gemma4-31b">💎 Gemma 4 31B</option>
+        </select>
+        <button onclick="copyChatTranscript()" title="Скопировать переписку" class="h-8 w-8 inline-flex items-center justify-center rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
+          <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+        </button>
+        <button onclick="clearChatMessages()" title="Очистить историю чата" class="h-8 w-8 inline-flex items-center justify-center rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
+          <i data-lucide="trash" class="w-3.5 h-3.5"></i>
+        </button>
+        <button onclick="toggleChatPanel()" class="h-8 w-8 inline-flex items-center justify-center rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Chat Messages Scroll Container -->
+    <div id="chatMessagesContainer" class="flex-1 overflow-y-auto p-4 space-y-4 text-xs">
+      <!-- Welcome card -->
+      <div class="bg-muted/30 border border-border/80 rounded-xl p-3.5 space-y-2 text-foreground">
+        <div class="flex items-center gap-1.5 font-semibold text-xs text-violet-600 dark:text-violet-400">
+          <i data-lucide="sparkles" class="w-4 h-4"></i>
+          Интерактивный аналитический ассистент
+        </div>
+        <p class="text-[11px] text-muted-foreground leading-relaxed">
+          Обсуждайте задачу разговором в свободной форме. Когда вы скажете <strong>«сгенерируй таблицу»</strong> или нажмете быструю подсказку снизу, модель выдаст интерактивную таблицу прямо сюда. Вы сможете <strong>выделить нужные строки галочками</strong> и <strong>перенести на холст</strong> в один клик!
+        </p>
+      </div>
+    </div>
+
+    <!-- Quick Action Chips -->
+    <div class="px-4 py-2 border-t border-border/60 bg-muted/20 flex items-center gap-1.5 overflow-x-auto text-[11px] shrink-0">
+      <button onclick="sendQuickChatMessage('Предложи критерии для Таблицы-Призмы (векторы: более выгодно, надежнее, быстрее)')" class="whitespace-nowrap px-2.5 py-1 rounded-full border border-border bg-background hover:bg-accent text-muted-foreground hover:text-foreground transition-colors">
+        💎 Критерии для Призмы
+      </button>
+      <button onclick="sendQuickChatMessage('Сгенерируй таблицу Операнда с 5 практическими вариантами решений')" class="whitespace-nowrap px-2.5 py-1 rounded-full border border-border bg-background hover:bg-accent text-muted-foreground hover:text-foreground transition-colors">
+        📊 Таблица Операнда
+      </button>
+      <button onclick="sendQuickChatMessage('Сгенерируй сразу пару таблиц: Операнд с решениями и Призму с градациями')" class="whitespace-nowrap px-2.5 py-1 rounded-full border border-border bg-background hover:bg-accent text-muted-foreground hover:text-foreground transition-colors">
+        ⚡ Операнд + Призма
+      </button>
+    </div>
+
+    <!-- Chat Input Box -->
+    <div class="p-3 border-t border-border bg-card shrink-0">
+      <form id="chatForm" onsubmit="handleSendChatMessage(event)" class="flex gap-2 items-end">
+        <textarea id="chatInput" rows="2" placeholder="Напишите сообщение или 'сгенерируй таблицу по теме...' (Enter для отправки)" class="flex-1 rounded-lg border border-input bg-background p-2.5 text-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-none leading-relaxed"></textarea>
+        <button type="submit" id="chatSendBtn" class="inline-flex items-center justify-center rounded-lg bg-violet-600 hover:bg-violet-700 text-white h-9 px-3.5 font-medium shadow-xs transition-colors shrink-0">
+          <i data-lucide="send" class="w-4 h-4"></i>
+        </button>
+      </form>
+    </div>
+  </aside>
+
+  <!-- ==================== SHADCN DIALOG: ГЕНЕРАТОР ТАБЛИЦ DUCKAI ==================== -->
+  <div id="generateModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs hidden items-center justify-center p-4">
+    <div class="relative w-full max-w-2xl rounded-xl border border-border bg-card p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+      
+      <!-- Dialog Header -->
+      <div class="flex items-start justify-between border-b border-border pb-3">
+        <div>
+          <h2 class="text-base font-semibold leading-none tracking-tight text-foreground flex items-center gap-2">
+            <i data-lucide="sparkles" class="w-4 h-4 text-rose-500"></i>
+            Генератор Таблиц (DuckAI)
+          </h2>
+          <p class="text-xs text-muted-foreground mt-1">Автоматическая генерация структурированных таблиц с выбором моделей DuckAI и чек-листом верификации.</p>
+        </div>
+        <button onclick="closeGenerateModal()" class="rounded-sm opacity-70 hover:opacity-100 transition-opacity">
+          <i data-lucide="x" class="w-4 h-4 text-muted-foreground"></i>
+        </button>
+      </div>
+
+      <!-- Settings Grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3.5 rounded-lg border border-border bg-muted/30">
+        <div class="sm:col-span-1">
+          <label class="block text-xs font-medium text-foreground mb-1.5">🤖 Модель DuckAI:</label>
+          <select id="genModelSelect" class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-xs shadow-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
+            <option value="gpt-6-luna">⚡ GPT-6 Luna (Best for everyday use)</option>
+            <option value="gpt-5.4-mini">🚀 GPT-5.4 mini (Solid but hits limits sooner)</option>
+            <option value="claude-haiku-4-5">🧠 Claude Haiku 4.5 (Solid but hits limits sooner)</option>
+            <option value="mistral-small-2603">🌪 Mistral Small 4</option>
+            <option value="tinfoil/gpt-oss-120b">🛡 gpt-oss 120B</option>
+            <option value="tinfoil/gemma4-31b">💎 Gemma 4 31B (Beta)</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-foreground mb-1.5">🔢 Выходные токены:</label>
+          <input type="number" id="genTokensInput" value="1000" min="100" max="4000" step="100" class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-xs font-semibold shadow-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-foreground mb-1.5">📊 Число строк:</label>
+          <input type="number" id="genRowsCountInput" value="5" min="2" max="15" class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-xs font-semibold shadow-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
+        </div>
+      </div>
+
+      <!-- Kind Toggle (Shadcn Radio Group style) -->
+      <div class="flex items-center gap-6 text-xs font-medium">
+        <label class="flex items-center gap-2 cursor-pointer">
+          <input type="radio" name="genTableKind" value="operand" checked class="h-4 w-4 text-primary border-input focus:ring-ring">
+          <span>📊 Операнд (решения, алгоритмы, стратегии)</span>
+        </label>
+        <label class="flex items-center gap-2 cursor-pointer">
+          <input type="radio" name="genTableKind" value="prism" class="h-4 w-4 text-sky-600 border-input focus:ring-ring">
+          <span>💎 Призма (векторы: более выгодно/сильнее/стабильнее)</span>
+        </label>
+      </div>
+
+      <!-- Prompt Input -->
+      <div>
+        <label class="block text-xs font-medium text-foreground mb-1.5">Тема или постановка задачи:</label>
+        <textarea id="genPromptInput" rows="3" placeholder="Например: Методы предотвращения дефолта корпоративных заемщиков или Инструменты скоринга..." class="w-full rounded-md border border-input bg-background p-3 text-xs shadow-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-none"></textarea>
+      </div>
+
+      <!-- Action Button -->
+      <div class="flex items-center justify-between pt-1">
+        <span class="text-[11px] text-muted-foreground">Генерация вернет готовую структуру для холста</span>
+        <button id="doGenerateBtn" onclick="sendGenerateRequest()" class="inline-flex items-center gap-2 whitespace-nowrap rounded-md text-xs font-semibold bg-rose-600 hover:bg-rose-700 text-white h-9 px-4 shadow-xs transition-colors">
+          <i data-lucide="play" class="w-3.5 h-3.5"></i>
+          <span>Сгенерировать таблицу</span>
+        </button>
+      </div>
+
+      <!-- Interactive Checklist for Row Verification & Re-generation -->
+      <div id="checklistSection" style="display: none;" class="pt-4 border-t border-border space-y-3">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-semibold text-foreground flex items-center gap-1.5">
+            <i data-lucide="check-square" class="w-4 h-4 text-primary"></i>
+            Чек-лист проверки строк (Отметьте неподходящие):
+          </span>
+          <span id="unwantedCountText" class="text-xs font-medium text-rose-600 dark:text-rose-400">Не подходит: 0</span>
+        </div>
+
+        <div id="generatedChecklist" class="max-h-56 overflow-y-auto space-y-2 p-3 rounded-lg border border-border bg-muted/20"></div>
+
+        <div>
+          <label class="block text-xs font-semibold text-rose-600 dark:text-rose-400 mb-1">✍ Опишите причину: почему эти строки не подходят?</label>
+          <input type="text" id="feedbackReasonInput" placeholder="Например: Слишком абстрактно, добавьте количественные метрики риска..." class="flex h-9 w-full rounded-md border border-rose-300 dark:border-rose-900 bg-background px-3 py-1 text-xs shadow-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-rose-500">
+        </div>
+
+        <div class="flex items-center justify-between pt-2">
+          <button onclick="regenerateWithFeedback()" class="inline-flex items-center gap-1.5 rounded-md text-xs font-semibold border border-rose-300 dark:border-rose-800 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 text-rose-700 dark:text-rose-300 h-8 px-3 transition-colors">
+            <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+            <span>Перегенерировать с учетом замечаний</span>
+          </button>
+          <button onclick="confirmAndPlaceGeneratedTable()" class="inline-flex items-center gap-1.5 rounded-md text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white h-8 px-4 shadow-xs transition-colors">
+            <i data-lucide="check" class="w-3.5 h-3.5"></i>
+            <span>Добавить проверенную таблицу на холст</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== SHADCN DIALOG: ПОСТРОЧНАЯ ГЕНЕРАЦИЯ (AI) ==================== -->
+  <div id="rowGenerateModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs hidden items-center justify-center p-4">
+    <div class="relative w-full max-w-lg rounded-xl border border-border bg-card p-6 shadow-2xl space-y-4">
+      <div class="flex items-start justify-between border-b border-border pb-3">
+        <div>
+          <h2 class="text-base font-semibold leading-none tracking-tight text-foreground flex items-center gap-2">
+            <i data-lucide="sparkles" class="w-4 h-4 text-violet-500"></i>
+            Сгенерировать строку (AI)
+          </h2>
+          <p id="rowGenTargetInfo" class="text-xs text-muted-foreground mt-1">Таблица: ...</p>
+        </div>
+        <button onclick="closeRowGenerateModal()" class="rounded-sm opacity-70 hover:opacity-100 transition-opacity">
+          <i data-lucide="x" class="w-4 h-4 text-muted-foreground"></i>
+        </button>
+      </div>
+
+      <div class="grid grid-cols-3 gap-3">
+        <div class="col-span-2">
+          <label class="block text-xs font-medium text-foreground mb-1">Модель DuckAI:</label>
+          <select id="rowModelSelect" class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-xs shadow-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
+            <option value="gpt-6-luna">⚡ GPT-6 Luna (Best for everyday use)</option>
+            <option value="gpt-5.4-mini">🚀 GPT-5.4 mini (Solid but hits limits sooner)</option>
+            <option value="claude-haiku-4-5">🧠 Claude Haiku 4.5 (Solid but hits limits sooner)</option>
+            <option value="mistral-small-2603">🌪 Mistral Small 4</option>
+            <option value="tinfoil/gpt-oss-120b">🛡 gpt-oss 120B</option>
+            <option value="tinfoil/gemma4-31b">💎 Gemma 4 31B (Beta)</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-foreground mb-1">Токены:</label>
+          <input type="number" id="rowTokensInput" value="300" min="50" max="1000" step="50" class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-xs font-semibold shadow-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-xs font-medium text-foreground mb-1">Пожелание к строке (опционально):</label>
+        <input type="text" id="rowUserInstructionInput" placeholder="Например: Добавить распределенный алгоритм Raft с минимальной задержкой..." class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-xs shadow-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
+      </div>
+
+      <div class="flex items-center justify-end gap-2 pt-2">
+        <button onclick="closeRowGenerateModal()" class="rounded-md text-xs font-medium border border-input bg-background hover:bg-accent h-8 px-3 transition-colors">Отмена</button>
+        <button id="doRowGenBtn" onclick="submitRowGeneration()" class="inline-flex items-center gap-1.5 rounded-md text-xs font-semibold bg-violet-600 hover:bg-violet-700 text-white h-8 px-4 shadow-xs transition-colors">
+          <i data-lucide="zap" class="w-3.5 h-3.5"></i>
+          <span>Сгенерировать и вставить</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== SHADCN DIALOG: РУЧНОЕ ДОБАВЛЕНИЕ ТАБЛИЦЫ ==================== -->
+  <div id="addModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs hidden items-center justify-center p-4">
+    <div class="relative w-full max-w-xl rounded-xl border border-border bg-card p-6 shadow-2xl space-y-4">
+      <div class="flex items-start justify-between border-b border-border pb-3">
+        <h2 id="modalTitleText" class="text-base font-semibold leading-none tracking-tight text-foreground">Добавить Таблицу</h2>
+        <button onclick="closeAddTableModal()" class="rounded-sm opacity-70 hover:opacity-100 transition-opacity">
+          <i data-lucide="x" class="w-4 h-4 text-muted-foreground"></i>
+        </button>
+      </div>
+
+      <div class="flex items-center gap-6 text-xs font-medium">
+        <label class="flex items-center gap-2 cursor-pointer">
+          <input type="radio" name="modalTableKind" value="operand" checked class="h-4 w-4 text-primary border-input focus:ring-ring">
+          <span>📊 Таблица-Операнд</span>
+        </label>
+        <label class="flex items-center gap-2 cursor-pointer">
+          <input type="radio" name="modalTableKind" value="prism" class="h-4 w-4 text-sky-600 border-input focus:ring-ring">
+          <span>💎 Таблица-Призма</span>
+        </label>
+      </div>
+
+      <div>
+        <label class="block text-xs font-medium text-foreground mb-1">Markdown разметка (опционально, или оставьте пустым для пустой таблицы):</label>
+        <textarea id="modalMdInput" rows="6" placeholder="| Колонка 1 | Колонка 2 |&#10;| --- | --- |&#10;| Значение 1 | Значение 2 |" class="w-full rounded-md border border-input bg-background p-3 text-xs font-mono shadow-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-none"></textarea>
+      </div>
+
+      <div class="flex items-center justify-end gap-2 pt-2">
+        <button onclick="createEmptyTable()" class="rounded-md text-xs font-medium border border-input bg-background hover:bg-accent h-8 px-3 transition-colors">Создать пустую</button>
+        <button onclick="submitAddTableFromModal()" class="rounded-md text-xs font-semibold bg-primary text-primary-foreground hover:bg-primary/90 h-8 px-4 shadow-xs transition-colors">Добавить на холст</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== SHADCN FLOATING TOAST ==================== -->
+  <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 rounded-full border border-border bg-card/95 backdrop-blur-md px-4 py-2 shadow-xl text-xs font-semibold text-foreground">
+    <i data-lucide="info" class="w-4 h-4 text-primary"></i>
+    <span id="toastMsg">Уведомление</span>
+  </div>
+
+  <!-- ==================== SHADCN CONTEXT MENU (ПКМ) ==================== -->
+  <div id="customContextMenu" class="fixed z-50 min-w-[220px] rounded-lg border border-border bg-popover/95 p-1 text-popover-foreground shadow-2xl backdrop-blur-md text-xs select-none hidden" style="top: 0; left: 0;">
+    <div id="contextMenuContent" class="space-y-0.5"></div>
+  </div>
+
+  <!-- ==================== JAVASCRIPT APPLICATION CORE ==================== -->
+  <script>
+    // --- ПЕРВОНАЧАЛЬНЫЕ ДАННЫЕ (ДЕМО) ---
+    const initialOperand1Markdown = `| Решение/Модель | Класс Надежности | Удельные Затраты | Скорость Внедрения |
+|---|---|---|---|
+| Гибридный Скоринг (LightGBM + Правила) | Высокий | Средние | Быстро (2 недели) |
+| Графовые Сети Доверия (GNN) | Критический | Высокие | Средне (2 месяца) |
+| Линейная Логистическая Регрессия | Умеренный | Минимальные | Мгновенно |
+| Экспертные Комитеты (Ручной) | Низкий (Человеческий фактор) | Критически высокие | Медленно |
+| Ансамбль Стекинга на 5 Моделях | Максимальный | Высокие | 3 недели |`;
+
+    const initialPrismMarkdown = `| Вектор-Критерий | Градация Вектора | Условие Доминирования |
+|---|---|---|
+| Более выгодно по совокупным затратам | Выгода > 70% | Минимальные удельные издержки при масштабировании |
+| Более надежно и устойчиво к сдвигам | Отказоустойчивость | Класс надежности выше базового при стресс-тестах |
+| Более высокая скорость окупаемости | Time-to-Market | Скорость развертывания быстрее конкурентов |`;
+
+    let tables = [];
+    let activeTableId = null;
+    let pan = { x: 40, y: 30 };
+    let zoom = 1.0;
+    let isPanning = false;
+    let panStart = { x: 0, y: 0 };
+    let draggingCardId = null;
+    let cardDragOffset = { x: 0, y: 0 };
+
+    let jevRowLines = [];
+    let jevCrossLines = [];
+    let lastAnalysisResult = null;
+    let canvasDataRevision = 0;
+
+    let currentPendingGeneratedTable = null;
+    let rejectedRowsSet = new Set();
+    let rowGenTargetTableId = null;
+
+    const viewport = document.getElementById('canvasViewport');
+    const canvasSpace = document.getElementById('canvasSpace');
+    const cardsGroup = document.getElementById('cardsGroup');
+    const jevLinesGroup = document.getElementById('jevLinesGroup');
+    const cardResizeObserver = new ResizeObserver(() => requestAnimationFrame(renderJevLines));
+
+    // --- CANVAS PAN & ZOOM ---
+    function applyCanvasTransform() {
+      canvasSpace.style.transform = `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`;
+      document.getElementById('zoomPercent').innerText = `${Math.round(zoom * 100)}%`;
+      renderJevLines();
+    }
+
+    function getTableCanvasSize(table) {
+      const width = Number(table?.width);
+      const height = Number(table?.height);
+      const rowCount = Array.isArray(table?.rows) ? table.rows.length : 0;
+      return {
+        width: Number.isFinite(width) && width > 0 ? width : 760,
+        height: Math.max(Number.isFinite(height) && height > 0 ? height : 0, 220, 104 + rowCount * 44)
+      };
+    }
+
+    function finiteCanvasCoordinate(value, fallback = 0) {
+      const number = Number(value);
+      return Number.isFinite(number) ? number : fallback;
+    }
+
+    function normalizeCanvasTables(source) {
+      return source.filter(table => table && typeof table === 'object').map((table, index) => ({
+        ...table,
+        id: String(table.id || `restored_${index}`),
+        x: finiteCanvasCoordinate(table.x),
+        y: finiteCanvasCoordinate(table.y),
+        width: Number.isFinite(Number(table.width)) && Number(table.width) > 0 ? Number(table.width) : 760,
+        height: Number.isFinite(Number(table.height)) && Number(table.height) > 0 ? Number(table.height) : 480,
+        headers: Array.isArray(table.headers) ? table.headers : [],
+        rows: Array.isArray(table.rows) ? table.rows.filter(Array.isArray) : []
+      }));
+    }
+
+    function getRenderedTableRow(table, rowIndex) {
+      const card = document.getElementById(`card-${table.id}`);
+      return card ? card.querySelector(`tr[data-row-idx="${Number(rowIndex)}"]`) : null;
+    }
+
+    function isTableRowVisible(table, row) {
+      if (!row) return false;
+      const card = document.getElementById(`card-${table.id}`);
+      const scrollArea = card?.querySelector('.overflow-auto');
+      if (!scrollArea) return false;
+      const rowRect = row.getBoundingClientRect();
+      const areaRect = scrollArea.getBoundingClientRect();
+      const stickyHeader = scrollArea.querySelector('thead');
+      const headerBottom = stickyHeader?.getBoundingClientRect().bottom ?? areaRect.top;
+      const top = Math.max(areaRect.top, headerBottom);
+      const bottom = areaRect.bottom;
+      const rowCenterY = rowRect.top + rowRect.height / 2;
+      return rowCenterY >= top && rowCenterY <= bottom && rowRect.right > areaRect.left && rowRect.left < areaRect.right;
+    }
+
+    function viewportPointToCanvas(clientX, clientY) {
+      const rect = viewport.getBoundingClientRect();
+      return { x: (clientX - rect.left - pan.x) / zoom, y: (clientY - rect.top - pan.y) / zoom };
+    }
+
+    function invalidateAnalysis(redraw = true) {
+      canvasDataRevision += 1;
+      jevRowLines = [];
+      jevCrossLines = [];
+      lastAnalysisResult = null;
+      tables.forEach(table => { delete table.evaluations; });
+      if (redraw) renderCanvas();
+      else requestAnimationFrame(renderCanvas);
+      const normBtn = document.getElementById('normBtn');
+      if (normBtn) normBtn.style.display = 'none';
+      const badge = document.getElementById('conveyorStatusBadge');
+      if (badge) badge.innerText = 'Требуется пересчёт';
+      const content = document.getElementById('conveyorContent');
+      if (content) content.innerHTML = '<div class="text-center py-12 text-muted-foreground"><p class="font-medium text-foreground">Данные холста изменились</p><p class="mt-1 text-xs">Пересчитайте связи, чтобы обновить стрелки и сводные выводы.</p></div>';
+    }
+
+    function changeZoom(delta) {
+      const rect = viewport.getBoundingClientRect();
+      zoomAtPoint(zoom + delta, rect.left + rect.width / 2, rect.top + rect.height / 2);
+      saveCanvasState();
+    }
+
+    function zoomAtPoint(nextZoom, clientX, clientY) {
+      const rect = viewport.getBoundingClientRect();
+      const localX = clientX - rect.left;
+      const localY = clientY - rect.top;
+      const canvasX = (localX - pan.x) / zoom;
+      const canvasY = (localY - pan.y) / zoom;
+      zoom = Math.max(0.2, Math.min(2.5, nextZoom));
+      pan.x = localX - canvasX * zoom;
+      pan.y = localY - canvasY * zoom;
+      applyCanvasTransform();
+    }
+
+    function resetZoom() {
+      zoom = 1.0;
+      pan = { x: 40, y: 30 };
+      applyCanvasTransform();
+      saveCanvasState();
+    }
+
+    viewport.addEventListener('mousedown', (e) => {
+      if (e.target === viewport || e.target.id === 'connectionsSvg' || e.button === 1) {
+        isPanning = true;
+        const rect = viewport.getBoundingClientRect();
+        panStart = { x: e.clientX - rect.left - pan.x, y: e.clientY - rect.top - pan.y };
+        viewport.classList.add('panning');
+      }
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (isPanning) {
+        const rect = viewport.getBoundingClientRect();
+        pan.x = e.clientX - rect.left - panStart.x;
+        pan.y = e.clientY - rect.top - panStart.y;
+        applyCanvasTransform();
+      } else if (draggingCardId !== null) {
+        const table = tables.find(t => t.id === draggingCardId);
+        if (table) {
+          const pointer = viewportPointToCanvas(e.clientX, e.clientY);
+          table.x = pointer.x - cardDragOffset.x;
+          table.y = pointer.y - cardDragOffset.y;
+          const cardEl = document.getElementById(`card-${table.id}`);
+          if (cardEl) {
+            cardEl.style.left = `${table.x}px`;
+            cardEl.style.top = `${table.y}px`;
+          }
+          renderJevLines();
+        }
+      }
+    });
+
+    window.addEventListener('mouseup', () => {
+      if (draggingCardId !== null || isPanning) {
+        saveCanvasState();
+      }
+      isPanning = false;
+      viewport.classList.remove('panning');
+      draggingCardId = null;
+    });
+
+    viewport.addEventListener('wheel', (e) => {
+      if (e.ctrlKey || e.metaKey) {
+        e.preventDefault();
+        const factor = e.deltaY < 0 ? 1.08 : 0.92;
+        zoomAtPoint(zoom * factor, e.clientX, e.clientY);
+      }
+    }, { passive: false });
+    window.addEventListener('resize', () => requestAnimationFrame(renderJevLines));
+
+    // --- MARKDOWN TABLE PARSER ---
+    function parseContentToTable(rawText, filename = '') {
+      const text = rawText.trim();
+      if (!text) return null;
+      if (text.includes('|') && text.includes('---')) {
+        const lines = text.split('\n').filter(l => l.trim().startsWith('|') && l.trim().endsWith('|'));
+        if (lines.length >= 2) {
+          const parseR = (line) => line.trim().slice(1, -1).split('|').map(s => s.trim());
+          return {
+            title: filename ? `MD: ${filename}` : 'Таблица Markdown',
+            headers: parseR(lines[0]),
+            rows: lines.slice(2).map(parseR).filter(r => r.length > 0)
+          };
+        }
+      }
+      return null;
+    }
+
+    // --- RENDER JEV CONNECTION LINES ---
+    function renderJevLines() {
+      jevLinesGroup.innerHTML = '';
+      // Size the SVG to the currently visible world rectangle. The viewport
+      // clips everything outside it, so distant offscreen tables must not make
+      // this SVG enormous or shift its coordinate system.
+      const safeZoom = Number.isFinite(zoom) && zoom > 0 ? zoom : 1;
+      const safePanX = finiteCanvasCoordinate(pan.x);
+      const safePanY = finiteCanvasCoordinate(pan.y);
+      const padding = 48 / safeZoom;
+      const minX = -safePanX / safeZoom - padding;
+      const minY = -safePanY / safeZoom - padding;
+      const maxX = (viewport.clientWidth - safePanX) / safeZoom + padding;
+      const maxY = (viewport.clientHeight - safePanY) / safeZoom + padding;
+      const svgWidth = Math.max(1, maxX - minX);
+      const svgHeight = Math.max(1, maxY - minY);
+      const svg = document.getElementById('connectionsSvg');
+      svg.style.left = `${minX}px`;
+      svg.style.top = `${minY}px`;
+      svg.style.width = `${svgWidth}px`;
+      svg.style.height = `${svgHeight}px`;
+      svg.setAttribute('width', String(svgWidth));
+      svg.setAttribute('height', String(svgHeight));
+      svg.setAttribute('preserveAspectRatio', 'none');
+      svg.setAttribute('viewBox', `${minX} ${minY} ${svgWidth} ${svgHeight}`);
+      if (jevRowLines.length === 0 && jevCrossLines.length === 0) return;
+
+      const viewportRect = viewport.getBoundingClientRect();
+      const toCanvasX = clientX => (clientX - viewportRect.left - pan.x) / zoom;
+      const toCanvasY = clientY => (clientY - viewportRect.top - pan.y) / zoom;
+
+      jevRowLines.forEach(line => {
+        const prTable = tables.find(t => t.id === line.prism_table_id);
+        const opTable = tables.find(t => t.id === line.operand_table_id);
+        if (!prTable || !opTable) return;
+
+        const prRowEl = getRenderedTableRow(prTable, line.prism_row_index);
+        const opRowEl = getRenderedTableRow(opTable, line.operand_row_index);
+        // Rows outside either card's scroll window have no visible anchor.
+        // Drawing their links makes them look like stray paths on the canvas.
+        if (!isTableRowVisible(prTable, prRowEl) || !isTableRowVisible(opTable, opRowEl)) return;
+
+        const opSize = getTableCanvasSize(opTable);
+        const prismSize = getTableCanvasSize(prTable);
+        const isOpLeft = (opTable.x + opSize.width / 2) < (prTable.x + prismSize.width / 2);
+
+        let yPrism, xPrism, yOp, xOp;
+
+        if (prRowEl) {
+          const r = prRowEl.getBoundingClientRect();
+          yPrism = toCanvasY(r.top + r.height / 2);
+          xPrism = isOpLeft ? toCanvasX(r.left) : toCanvasX(r.right);
+        } else {
+          yPrism = prTable.y + 65 + (line.prism_row_index * 42);
+          xPrism = isOpLeft ? prTable.x : prTable.x + prismSize.width;
+        }
+
+        if (opRowEl) {
+          const r = opRowEl.getBoundingClientRect();
+          yOp = toCanvasY(r.top + r.height / 2);
+          xOp = isOpLeft ? toCanvasX(r.right) : toCanvasX(r.left);
+        } else {
+          yOp = opTable.y + 65 + (line.operand_row_index * 42);
+          xOp = isOpLeft ? opTable.x + opSize.width : opTable.x;
+        }
+
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        const dx = Math.abs(xPrism - xOp) * 0.5;
+        const c1x = isOpLeft ? xOp + dx : xOp - dx;
+        const c2x = isOpLeft ? xPrism - dx : xPrism + dx;
+
+        // The displayed relation reads Prism → Operand, so the arrowhead lands
+        // on the operand row (the line's semantic target).
+        path.setAttribute('d', `M ${xPrism} ${yPrism} C ${c2x} ${yPrism}, ${c1x} ${yOp}, ${xOp} ${yOp}`);
+        path.setAttribute('class', 'jev-link-line jev-link-prism');
+        path.setAttribute('marker-end', 'url(#prismMarker)');
+
+        path.addEventListener('click', () => {
+          showToast(`Линия Jev: "${line.prism_criterion_name}" ➔ "${line.operand_content}" (Score: ${line.score}/3)`);
+        });
+
+        jevLinesGroup.appendChild(path);
+      });
+
+      jevCrossLines.forEach(cross => {
+        const tSrc = tables.find(t => t.id === cross.source_table_id);
+        const tTgt = tables.find(t => t.id === cross.target_table_id);
+        if (!tSrc || !tTgt) return;
+
+        const srcRowEl = getRenderedTableRow(tSrc, cross.source_row_index);
+        const tgtRowEl = getRenderedTableRow(tTgt, cross.target_row_index);
+        if (!isTableRowVisible(tSrc, srcRowEl) || !isTableRowVisible(tTgt, tgtRowEl)) return;
+
+        const srcSize = getTableCanvasSize(tSrc);
+        const tgtSize = getTableCanvasSize(tTgt);
+        const isSrcLeft = (tSrc.x + srcSize.width / 2) < (tTgt.x + tgtSize.width / 2);
+
+        let ySrc, xSrc, yTgt, xTgt;
+        if (srcRowEl) {
+          const r = srcRowEl.getBoundingClientRect();
+          ySrc = toCanvasY(r.top + r.height / 2);
+          xSrc = isSrcLeft ? toCanvasX(r.right) : toCanvasX(r.left);
+        } else {
+          ySrc = tSrc.y + 65 + (cross.source_row_index * 42);
+          xSrc = isSrcLeft ? tSrc.x + srcSize.width : tSrc.x;
+        }
+
+        if (tgtRowEl) {
+          const r = tgtRowEl.getBoundingClientRect();
+          yTgt = toCanvasY(r.top + r.height / 2);
+          xTgt = isSrcLeft ? toCanvasX(r.left) : toCanvasX(r.right);
+        } else {
+          yTgt = tTgt.y + 65 + (cross.target_row_index * 42);
+          xTgt = isSrcLeft ? tTgt.x : tTgt.x + tgtSize.width;
+        }
+
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        const dx = Math.abs(xTgt - xSrc) * 0.5;
+        const c1x = isSrcLeft ? xSrc + dx : xSrc - dx;
+        const c2x = isSrcLeft ? xTgt - dx : xTgt + dx;
+
+        path.setAttribute('d', `M ${xSrc} ${ySrc} C ${c1x} ${ySrc}, ${c2x} ${yTgt}, ${xTgt} ${yTgt}`);
+        path.setAttribute('class', 'jev-link-line jev-link-cross');
+        path.setAttribute('marker-end', 'url(#crossMarker)');
+
+        jevLinesGroup.appendChild(path);
+      });
+    }
+
+    // --- RENDER CANVAS CARDS (SHADCN CARD & TABLE STYLE) ---
+    function renderCanvas() {
+      cardResizeObserver.disconnect();
+      cardsGroup.innerHTML = '';
+
+      if (tables.length === 0) {
+        cardsGroup.innerHTML = `
+          <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-center p-8 rounded-2xl border-2 border-dashed border-border bg-card/85 backdrop-blur-xs max-w-md pointer-events-auto shadow-sm select-none">
+            <div class="w-12 h-12 rounded-xl bg-muted flex items-center justify-center mx-auto mb-3 text-muted-foreground">
+              <i data-lucide="layout-grid" class="w-6 h-6"></i>
+            </div>
+            <h3 class="text-sm font-semibold text-foreground">Холст пуст</h3>
+            <p class="text-xs text-muted-foreground mt-1">Все таблицы удалены. Вы можете добавить новую таблицу через меню, чат или правый клик (ПКМ) на холсте.</p>
+            <div class="flex items-center justify-center gap-2 mt-4">
+              <button onclick="openAddTableModal('operand')" class="inline-flex items-center gap-1 rounded-md text-xs font-medium border border-input bg-background hover:bg-accent h-7 px-2.5">
+                <i data-lucide="plus" class="w-3 h-3"></i> Операнд
+              </button>
+              <button onclick="openAddTableModal('prism')" class="inline-flex items-center gap-1 rounded-md text-xs font-semibold bg-sky-600 hover:bg-sky-700 text-white h-7 px-2.5">
+                <i data-lucide="gem" class="w-3 h-3"></i> Призма
+              </button>
+              <button onclick="openChatPanel()" class="inline-flex items-center gap-1 rounded-md text-xs font-semibold bg-violet-600 hover:bg-violet-700 text-white h-7 px-2.5">
+                <i data-lucide="messages-square" class="w-3 h-3"></i> AI Чат
+              </button>
+            </div>
+          </div>
+        `;
+        renderJevLines();
+        if (window.lucide) lucide.createIcons();
+        return;
+      }
+
+      tables.forEach(table => {
+        const isPrism = table.kind === 'prism';
+
+        const card = document.createElement('div');
+        card.className = `canvas-card rounded-xl border border-border bg-card text-card-foreground shadow-sm flex flex-col overflow-hidden ${table.id === activeTableId ? 'active-card' : ''}`;
+        card.id = `card-${table.id}`;
+        card.style.left = `${table.x}px`;
+        card.style.top = `${table.y}px`;
+        const size = getTableCanvasSize(table);
+        const cardHeight = size.height;
+        card.style.width = `${size.width}px`;
+        card.style.height = `${cardHeight}px`;
+
+        card.addEventListener('mousedown', (e) => {
+          if (e.button === 0 && !e.target.closest('button') && !e.target.closest('.cell-editable')) {
+            activeTableId = table.id;
+            updateActiveCardsVisual();
+          }
+        });
+
+        // Card Header (Shadcn CardHeader)
+        const header = document.createElement('div');
+        header.className = 'flex items-center justify-between px-4 py-3 border-b border-border bg-muted/40 select-none cursor-move shrink-0';
+        header.innerHTML = `
+          <div class="flex items-center gap-2.5 overflow-hidden">
+            <span class="inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wider ${isPrism ? 'border border-sky-300 bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300' : 'border border-border bg-muted text-muted-foreground'}">
+              ${isPrism ? '💎 Призма' : '📊 Операнд'}
+            </span>
+            <span contenteditable="true" onblur="updateTableTitle('${table.id}', this.innerText)" class="text-xs font-semibold text-foreground truncate cursor-text hover:underline">${table.title}</span>
+            <span class="text-[11px] text-muted-foreground">(${table.rows.length})</span>
+          </div>
+
+          <div class="flex items-center gap-1.5 shrink-0">
+            <button onclick="openRowGenerateModal('${table.id}')" class="inline-flex items-center gap-1 rounded-md text-[11px] font-semibold bg-violet-600 hover:bg-violet-700 text-white h-7 px-2.5 shadow-2xs transition-colors" title="Сгенерировать строку через AI">
+              <i data-lucide="sparkles" class="w-3 h-3"></i> +Строка AI
+            </button>
+            <button onclick="addRowToTable('${table.id}')" class="inline-flex items-center gap-1 rounded-md text-[11px] font-medium border border-input bg-background hover:bg-accent text-foreground h-7 px-2 shadow-2xs transition-colors" title="Добавить пустую строку">
+              <i data-lucide="plus" class="w-3 h-3"></i> Строка
+            </button>
+            <button onclick="addColumnToTable('${table.id}')" class="inline-flex items-center gap-1 rounded-md text-[11px] font-medium border border-input bg-background hover:bg-accent text-foreground h-7 px-2 shadow-2xs transition-colors" title="Добавить колонку">
+              <i data-lucide="columns" class="w-3 h-3"></i> Колонка
+            </button>
+            <button onclick="deleteTable('${table.id}')" class="inline-flex items-center justify-center rounded-md hover:bg-destructive/10 text-muted-foreground hover:text-destructive h-7 w-7 transition-colors" title="Удалить таблицу">
+              <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
+        `;
+
+        header.addEventListener('mousedown', (e) => {
+          if (e.button !== 0 || e.target.closest('button') || e.target.isContentEditable) return;
+          draggingCardId = table.id;
+          activeTableId = table.id;
+          updateActiveCardsVisual();
+          const pointer = viewportPointToCanvas(e.clientX, e.clientY);
+          cardDragOffset = { x: pointer.x - table.x, y: pointer.y - table.y };
+        });
+
+        // Card Content / Table Body (Shadcn Table)
+        const body = document.createElement('div');
+        body.className = 'flex-1 overflow-auto bg-card relative';
+        body.addEventListener('scroll', renderJevLines, { passive: true });
+        
+        let tableHtml = `<table class="w-full text-xs text-left border-collapse"><thead class="sticky top-0 bg-muted/90 backdrop-blur-xs border-b border-border z-10"><tr>`;
+        tableHtml += `<th class="w-12 text-center p-2.5 font-semibold text-muted-foreground uppercase text-[10px]">#</th>`;
+        table.headers.forEach((h, hIdx) => {
+          tableHtml += `
+            <th class="p-2.5 font-semibold text-muted-foreground uppercase text-[10px] tracking-wider border-r border-border/50">
+              <div class="flex items-center justify-between gap-1">
+                <span contenteditable="true" onblur="updateHeader('${table.id}', ${hIdx}, this.innerText)" class="hover:underline cursor-text">${h}</span>
+                ${table.headers.length > 1 ? `<button onclick="deleteColumn('${table.id}', ${hIdx})" class="col-del-btn text-muted-foreground hover:text-destructive p-0.5" title="Удалить колонку"><i data-lucide="x" class="w-3 h-3"></i></button>` : ''}
+              </div>
+            </th>`;
+        });
+        tableHtml += `</tr></thead><tbody class="divide-y divide-border">`;
+
+        if (table.rows.length === 0) {
+          tableHtml += `
+            <tr>
+              <td colspan="${table.headers.length + 1}" class="text-center p-8 text-muted-foreground text-xs italic bg-muted/10">
+                <div class="space-y-2">
+                  <p>В этой таблице нет строк</p>
+                  <div class="flex items-center justify-center gap-2 not-italic">
+                    <button onclick="addRowToTable('${table.id}')" class="px-2.5 py-1 rounded text-xs font-medium border border-input bg-background hover:bg-accent text-foreground">➕ Добавить строку</button>
+                    <button onclick="openRowGenerateModal('${table.id}')" class="px-2.5 py-1 rounded text-xs font-semibold bg-violet-600 hover:bg-violet-700 text-white">✨ +Строка AI</button>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          `;
+        } else {
+          table.rows.forEach((row, rIdx) => {
+            const evalMeta = (table.evaluations && table.evaluations[rIdx]) || null;
+            let domBadge = '';
+            let isDominantRow = false;
+
+            if (evalMeta) {
+              isDominantRow = evalMeta.is_top;
+              if (evalMeta.is_top) {
+                domBadge = `<div class="mt-1 inline-flex items-center gap-1 rounded-md border border-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 px-1.5 py-0.2 text-[10px] font-bold"><i data-lucide="crown" class="w-3 h-3"></i> Доминант [Score: ${evalMeta.integral_score}/3]</div>`;
+              } else {
+                domBadge = `<div class="mt-1 inline-flex items-center gap-1 rounded-md border border-amber-300 bg-amber-50 dark:bg-amber-950/60 dark:border-amber-800 text-amber-700 dark:text-amber-300 px-1.5 py-0.2 text-[10px] font-medium">⚖ Субординат [Score: ${evalMeta.integral_score}/3]</div>`;
+              }
+            }
+
+            tableHtml += `<tr class="transition-colors hover:bg-muted/40 ${isDominantRow ? 'bg-emerald-500/10 hover:bg-emerald-500/15' : ''}" data-row-idx="${rIdx}">`;
+            tableHtml += `
+              <td class="row-num-cell text-center p-2 font-mono text-[11px] text-muted-foreground relative">
+                <span class="row-anchor ${isDominantRow ? 'anchor-dom' : ''}"></span>
+                <span>${rIdx + 1}</span>
+                <button onclick="deleteRow('${table.id}', ${rIdx})" class="btn-row-del absolute right-1 top-1/2 -translate-y-1/2 p-0.5 rounded-sm hover:bg-destructive/10 text-destructive" title="Удалить строку">
+                  <i data-lucide="x" class="w-3 h-3"></i>
+                </button>
+              </td>`;
+            
+            row.forEach((cell, cIdx) => {
+              tableHtml += `
+                <td class="cell-editable p-2.5 text-foreground border-r border-border/40 align-middle leading-relaxed whitespace-normal break-words" contenteditable="true" onblur="updateCell('${table.id}', ${rIdx}, ${cIdx}, this.innerText)">
+                  ${cell}
+                  ${cIdx === 0 ? domBadge : ''}
+                </td>`;
+            });
+            tableHtml += `</tr>`;
+          });
+        }
+
+        tableHtml += `</tbody></table>`;
+        body.innerHTML = tableHtml;
+
+        card.appendChild(header);
+        card.appendChild(body);
+        cardsGroup.appendChild(card);
+        cardResizeObserver.observe(card);
+      });
+
+      renderJevLines();
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function updateActiveCardsVisual() {
+      document.querySelectorAll('.canvas-card').forEach(c => {
+        if (c.id === `card-${activeTableId}`) c.classList.add('active-card');
+        else c.classList.remove('active-card');
+      });
+    }
+
+    // --- TABLE DATA EDITORS ---
+    function updateTableTitle(tableId, title) {
+      const t = tables.find(item => item.id === tableId);
+      if (t) {
+        t.title = title.trim();
+        invalidateAnalysis(false);
+        saveCanvasState();
+      }
+    }
+
+    function updateHeader(tableId, hIdx, val) {
+      const t = tables.find(item => item.id === tableId);
+      if (t && t.headers[hIdx] !== undefined) {
+        t.headers[hIdx] = val.trim();
+        invalidateAnalysis(false);
+        saveCanvasState();
+      }
+    }
+
+    function updateCell(tableId, rIdx, cIdx, val) {
+      const t = tables.find(item => item.id === tableId);
+      if (t && t.rows[rIdx] && t.rows[rIdx][cIdx] !== undefined) {
+        t.rows[rIdx][cIdx] = val.trim();
+        invalidateAnalysis(false);
+        saveCanvasState();
+      }
+    }
+
+    function addRowToTable(tableId) {
+      const t = tables.find(item => item.id === tableId);
+      if (t) {
+        t.rows.push(Array(t.headers.length).fill('Новая запись'));
+        invalidateAnalysis();
+        renderCanvas();
+        saveCanvasState();
+        showToast('Добавлена строка');
+      }
+    }
+
+    function deleteRow(tableId, rIdx) {
+      const t = tables.find(item => item.id === tableId);
+      if (!t) return;
+      t.rows.splice(rIdx, 1);
+      invalidateAnalysis();
+      renderCanvas();
+      saveCanvasState();
+      showToast('Строка удалена');
+    }
+
+    function insertRowBelow(tableId, rIdx) {
+      const t = tables.find(item => item.id === tableId);
+      if (!t) return;
+      t.rows.splice(rIdx + 1, 0, Array(t.headers.length).fill('Новая запись'));
+      invalidateAnalysis();
+      renderCanvas();
+      saveCanvasState();
+      showToast('Строка добавлена');
+    }
+
+    function duplicateRow(tableId, rIdx) {
+      const t = tables.find(item => item.id === tableId);
+      if (!t || !t.rows[rIdx]) return;
+      const copyRow = [...t.rows[rIdx]];
+      copyRow[0] = copyRow[0] + ' (Копия)';
+      t.rows.splice(rIdx + 1, 0, copyRow);
+      invalidateAnalysis();
+      renderCanvas();
+      saveCanvasState();
+      showToast('Строка дублирована');
+    }
+
+    function addColumnToTable(tableId) {
+      const t = tables.find(item => item.id === tableId);
+      if (!t) return;
+      const colName = prompt('Введите название новой колонки:', `Колонка ${t.headers.length + 1}`);
+      if (!colName) return;
+      t.headers.push(colName.trim());
+      t.rows.forEach(r => r.push('-'));
+      invalidateAnalysis();
+      renderCanvas();
+      saveCanvasState();
+      showToast('Колонка добавлена');
+    }
+
+    function deleteColumn(tableId, hIdx) {
+      const t = tables.find(item => item.id === tableId);
+      if (!t) return;
+      if (!confirm(`Удалить колонку "${t.headers[hIdx]}"?`)) return;
+      t.headers.splice(hIdx, 1);
+      t.rows.forEach(r => r.splice(hIdx, 1));
+      invalidateAnalysis();
+      renderCanvas();
+      saveCanvasState();
+      showToast('Колонка удалена');
+    }
+
+    function deleteTable(tableId) {
+      tables = tables.filter(t => t.id !== tableId);
+      activeTableId = tables.length > 0 ? tables[0].id : null;
+      invalidateAnalysis();
+      renderCanvas();
+      saveCanvasState();
+      showToast('Таблица удалена');
+    }
+
+    function duplicateTable(tableId) {
+      const t = tables.find(item => item.id === tableId);
+      if (!t) return;
+      const newId = 'table_' + Date.now();
+      tables.push({
+        id: newId,
+        title: t.title + ' (Копия)',
+        kind: t.kind,
+        x: t.x + 40,
+        y: t.y + 40,
+        width: t.width || 780,
+        height: t.height || 480,
+        headers: [...t.headers],
+        rows: t.rows.map(r => [...r]),
+        analysis_generated: Boolean(t.analysis_generated)
+      });
+      invalidateAnalysis();
+      activeTableId = newId;
+      renderCanvas();
+      saveCanvasState();
+      showToast(`Таблица "${t.title}" дублирована`);
+    }
+
+    function toggleTableKind(tableId) {
+      const t = tables.find(item => item.id === tableId);
+      if (!t) return;
+      t.kind = t.kind === 'prism' ? 'operand' : 'prism';
+      invalidateAnalysis();
+      renderCanvas();
+      saveCanvasState();
+      showToast(`Тип изменен на: ${t.kind === 'prism' ? '💎 Призма' : '📊 Операнд'}`);
+    }
+
+    // --- SHADCN CONTEXT MENU (ПКМ) MANAGER ---
+    let contextMenuTarget = null;
+
+    function closeContextMenu() {
+      const menu = document.getElementById('customContextMenu');
+      if (menu) menu.classList.add('hidden');
+      contextMenuTarget = null;
+    }
+
+    function openContextMenu(e, targetInfo) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      contextMenuTarget = targetInfo;
+      const menu = document.getElementById('customContextMenu');
+      const content = document.getElementById('contextMenuContent');
+
+      content.innerHTML = renderContextMenuItems(targetInfo);
+      menu.classList.remove('hidden');
+
+      const menuWidth = 230;
+      const menuHeight = menu.offsetHeight || 260;
+      let left = e.clientX;
+      let top = e.clientY;
+
+      if (left + menuWidth > window.innerWidth) {
+        left = window.innerWidth - menuWidth - 8;
+      }
+      if (top + menuHeight > window.innerHeight) {
+        top = window.innerHeight - menuHeight - 8;
+      }
+
+      menu.style.left = `${Math.max(8, left)}px`;
+      menu.style.top = `${Math.max(8, top)}px`;
+
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function renderContextMenuItems(info) {
+      let html = '';
+
+      if (info.type === 'row') {
+        const t = tables.find(item => item.id === info.tableId);
+        html += `
+          <div class="px-2 py-1 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider flex items-center justify-between border-b border-border/50 pb-1.5 mb-1">
+            <span>Строка #${info.rowIndex + 1}</span>
+            <span class="text-[9px] opacity-75">${t ? escapeHtml(t.title.slice(0, 15)) : ''}</span>
+          </div>
+          <button onclick="contextAction('rowGenAI')" class="w-full text-left flex items-center gap-2 px-2.5 py-1.5 rounded-md hover:bg-accent text-foreground transition-colors">
+            <i data-lucide="sparkles" class="w-3.5 h-3.5 text-violet-500"></i>
+            <span>Сгенерировать строку AI</span>
+          </button>
+          <button onclick="contextAction('insertRowBelow')" class="w-full text-left flex items-center gap-2 px-2.5 py-1.5 rounded-md hover:bg-accent text-foreground transition-colors">
+            <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+            <span>Вставить строку ниже</span>
+          </button>
+          <button onclick="contextAction('duplicateRow')" class="w-full text-left flex items-center gap-2 px-2.5 py-1.5 rounded-md hover:bg-accent text-foreground transition-colors">
+            <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+            <span>Дублировать строку</span>
+          </button>
+          <button onclick="contextAction('chatAboutRow')" class="w-full text-left flex items-center gap-2 px-2.5 py-1.5 rounded-md hover:bg-accent text-foreground transition-colors">
+            <i data-lucide="messages-square" class="w-3.5 h-3.5 text-sky-500"></i>
+            <span>Обсудить в AI Чате</span>
+          </button>
+          <div class="h-px bg-border my-1 -mx-1"></div>
+          <button onclick="contextAction('deleteRow')" class="w-full text-left flex items-center gap-2 px-2.5 py-1.5 rounded-md hover:bg-destructive/10 text-destructive transition-colors">
+            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+            <span>Удалить эту строку</span>
+          </button>
+        `;
+      } else if (info.type === 'card') {
+        const t = tables.find(item => item.id === info.tableId);
+        if (!t) return '';
+
+        html += `
+          <div class="px-2 py-1 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider flex items-center justify-between border-b border-border/50 pb-1.5 mb-1">
+            <span class="truncate">${escapeHtml(t.title.slice(0, 18))}</span>
+            <span class="text-[9px] ${t.kind === 'prism' ? 'text-sky-600' : 'text-primary'}">${t.kind === 'prism' ? '💎 Призма' : '📊 Операнд'}</span>
+          </div>
+          <button onclick="contextAction('rowGenAI')" class="w-full text-left flex items-center gap-2 px-2.5 py-1.5 rounded-md hover:bg-accent text-foreground transition-colors">
+            <i data-lucide="sparkles" class="w-3.5 h-3.5 text-violet-500"></i>
+            <span>+Строка AI</span>
+          </button>
+          <button onclick="contextAction('addRow')" class="w-full text-left flex items-center gap-2 px-2.5 py-1.5 rounded-md hover:bg-accent text-foreground transition-colors">
+            <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+            <span>Добавить строку</span>
+          </button>
+          <button onclick="contextAction('addColumn')" class="w-full text-left flex items-center gap-2 px-2.5 py-1.5 rounded-md hover:bg-accent text-foreground transition-colors">
+            <i data-lucide="columns" class="w-3.5 h-3.5"></i>
+            <span>Добавить колонку</span>
+          </button>
+          <div class="h-px bg-border my-1 -mx-1"></div>
+          <button onclick="contextAction('toggleKind')" class="w-full text-left flex items-center gap-2 px-2.5 py-1.5 rounded-md hover:bg-accent text-foreground transition-colors">
+            <i data-lucide="repeat" class="w-3.5 h-3.5 text-amber-500"></i>
+            <span>Сменить на ${t.kind === 'prism' ? '📊 Операнд' : '💎 Призму'}</span>
+          </button>
+          <button onclick="contextAction('duplicateTable')" class="w-full text-left flex items-center gap-2 px-2.5 py-1.5 rounded-md hover:bg-accent text-foreground transition-colors">
+            <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+            <span>Дублировать таблицу</span>
+          </button>
+          <button onclick="contextAction('chatAboutTable')" class="w-full text-left flex items-center gap-2 px-2.5 py-1.5 rounded-md hover:bg-accent text-foreground transition-colors">
+            <i data-lucide="messages-square" class="w-3.5 h-3.5 text-violet-500"></i>
+            <span>Обсудить в AI Чате</span>
+          </button>
+          <button onclick="contextAction('runJev')" class="w-full text-left flex items-center gap-2 px-2.5 py-1.5 rounded-md hover:bg-accent text-foreground transition-colors">
+            <i data-lucide="zap" class="w-3.5 h-3.5 text-emerald-500"></i>
+            <span>Сформировать связи (Jev)</span>
+          </button>
+          <div class="h-px bg-border my-1 -mx-1"></div>
+          <button onclick="contextAction('deleteTable')" class="w-full text-left flex items-center gap-2 px-2.5 py-1.5 rounded-md hover:bg-destructive/10 text-destructive transition-colors">
+            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+            <span>Удалить таблицу</span>
+          </button>
+        `;
+      } else if (info.type === 'canvas') {
+        html += `
+          <div class="px-2 py-1 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider border-b border-border/50 pb-1.5 mb-1">
+            Холст Prism Studio
+          </div>
+          <button onclick="contextAction('addOperand')" class="w-full text-left flex items-center gap-2 px-2.5 py-1.5 rounded-md hover:bg-accent text-foreground transition-colors">
+            <i data-lucide="plus" class="w-3.5 h-3.5 text-primary"></i>
+            <span>Новая таблица-Операнд</span>
+          </button>
+          <button onclick="contextAction('addPrism')" class="w-full text-left flex items-center gap-2 px-2.5 py-1.5 rounded-md hover:bg-accent text-foreground transition-colors">
+            <i data-lucide="gem" class="w-3.5 h-3.5 text-sky-500"></i>
+            <span>Новая таблица-Призма</span>
+          </button>
+          <button onclick="contextAction('openChat')" class="w-full text-left flex items-center gap-2 px-2.5 py-1.5 rounded-md hover:bg-accent text-foreground transition-colors">
+            <i data-lucide="messages-square" class="w-3.5 h-3.5 text-violet-500"></i>
+            <span>Открыть AI Чат-Генератор</span>
+          </button>
+          <div class="h-px bg-border my-1 -mx-1"></div>
+          <button onclick="contextAction('runJev')" class="w-full text-left flex items-center gap-2 px-2.5 py-1.5 rounded-md hover:bg-accent text-foreground transition-colors">
+            <i data-lucide="zap" class="w-3.5 h-3.5 text-emerald-500"></i>
+            <span>Сформировать связи (Jev)</span>
+          </button>
+          ${lastAnalysisResult ? `
+          <button onclick="contextAction('applyNormalization')" class="w-full text-left flex items-center gap-2 px-2.5 py-1.5 rounded-md hover:bg-accent text-foreground transition-colors">
+            <i data-lucide="trophy" class="w-3.5 h-3.5 text-amber-500"></i>
+            <span>Выгрузить ТОП-Таблицы</span>
+          </button>
+          ` : ''}
+          <button onclick="contextAction('toggleConveyor')" class="w-full text-left flex items-center gap-2 px-2.5 py-1.5 rounded-md hover:bg-accent text-foreground transition-colors">
+            <i data-lucide="panel-right" class="w-3.5 h-3.5"></i>
+            <span>Панель рейтинга и линий</span>
+          </button>
+          <div class="h-px bg-border my-1 -mx-1"></div>
+          <button onclick="contextAction('fitView')" class="w-full text-left flex items-center gap-2 px-2.5 py-1.5 rounded-md hover:bg-accent text-foreground transition-colors">
+            <i data-lucide="scan" class="w-3.5 h-3.5 text-sky-500"></i>
+            <span>Вписать все таблицы в экран</span>
+          </button>
+          <button onclick="contextAction('resetZoom')" class="w-full text-left flex items-center gap-2 px-2.5 py-1.5 rounded-md hover:bg-accent text-foreground transition-colors">
+            <i data-lucide="zoom-in" class="w-3.5 h-3.5"></i>
+            <span>Сбросить масштаб (1:1)</span>
+          </button>
+          <button onclick="contextAction('saveCanvas')" class="w-full text-left flex items-center gap-2 px-2.5 py-1.5 rounded-md hover:bg-accent text-foreground transition-colors">
+            <i data-lucide="save" class="w-3.5 h-3.5"></i>
+            <span>Сохранить состояние</span>
+          </button>
+        `;
+      } else if (info.type === 'chatWidget') {
+        html += `
+          <div class="px-2 py-1 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider border-b border-border/50 pb-1.5 mb-1">
+            Таблица в чате
+          </div>
+          <button onclick="contextAction('transferSelected')" class="w-full text-left flex items-center gap-2 px-2.5 py-1.5 rounded-md hover:bg-accent text-foreground transition-colors">
+            <i data-lucide="layout-grid" class="w-3.5 h-3.5 text-primary"></i>
+            <span>🚀 Перенести выбранные на холст</span>
+          </button>
+          <button onclick="contextAction('transferAll')" class="w-full text-left flex items-center gap-2 px-2.5 py-1.5 rounded-md hover:bg-accent text-foreground transition-colors">
+            <i data-lucide="layers" class="w-3.5 h-3.5"></i>
+            <span>Перенести всю таблицу</span>
+          </button>
+          <div class="h-px bg-border my-1 -mx-1"></div>
+          <button onclick="contextAction('selectAllRows')" class="w-full text-left flex items-center gap-2 px-2.5 py-1.5 rounded-md hover:bg-accent text-foreground transition-colors">
+            <i data-lucide="check-square" class="w-3.5 h-3.5 text-emerald-500"></i>
+            <span>Выбрать все строки</span>
+          </button>
+          <button onclick="contextAction('unselectAllRows')" class="w-full text-left flex items-center gap-2 px-2.5 py-1.5 rounded-md hover:bg-accent text-foreground transition-colors">
+            <i data-lucide="square" class="w-3.5 h-3.5"></i>
+            <span>Снять выбор</span>
+          </button>
+        `;
+      }
+
+      return html;
+    }
+
+    function contextAction(action) {
+      const target = contextMenuTarget;
+      closeContextMenu();
+      if (!target) return;
+
+      switch(action) {
+        case 'rowGenAI':
+          if (target.tableId) openRowGenerateModal(target.tableId);
+          break;
+        case 'insertRowBelow':
+          if (target.tableId && target.rowIndex !== undefined) {
+            insertRowBelow(target.tableId, target.rowIndex);
+          }
+          break;
+        case 'duplicateRow':
+          if (target.tableId && target.rowIndex !== undefined) {
+            duplicateRow(target.tableId, target.rowIndex);
+          }
+          break;
+        case 'deleteRow':
+          if (target.tableId && target.rowIndex !== undefined) {
+            deleteRow(target.tableId, target.rowIndex);
+          }
+          break;
+        case 'chatAboutRow':
+          if (target.tableId && target.rowIndex !== undefined) {
+            const t = tables.find(item => item.id === target.tableId);
+            const rowText = (t && t.rows[target.rowIndex]) ? t.rows[target.rowIndex].join(' | ') : '';
+            openChatPanel();
+            sendQuickChatMessage(`Давай разберем и улучшим строку из таблицы "${t ? t.title : ''}": [${rowText}]. Как ее усилить или дополнить?`);
+          }
+          break;
+        case 'addRow':
+          if (target.tableId) addRowToTable(target.tableId);
+          break;
+        case 'addColumn':
+          if (target.tableId) addColumnToTable(target.tableId);
+          break;
+        case 'toggleKind':
+          if (target.tableId) toggleTableKind(target.tableId);
+          break;
+        case 'duplicateTable':
+          if (target.tableId) duplicateTable(target.tableId);
+          break;
+        case 'deleteTable':
+          if (target.tableId) deleteTable(target.tableId);
+          break;
+        case 'chatAboutTable':
+          if (target.tableId) {
+            const t = tables.find(item => item.id === target.tableId);
+            openChatPanel();
+            sendQuickChatMessage(`Давай проанализируем таблицу "${t ? t.title : ''}" (${t ? t.kind : ''}). Заголовки: [${t ? t.headers.join(', ') : ''}]. Строк: ${t ? t.rows.length : 0}. Что в ней не хватает?`);
+          }
+          break;
+        case 'runJev':
+          runTypeSafeAnalysis();
+          break;
+        case 'applyNormalization':
+          applyAutoNormalization();
+          break;
+        case 'addOperand':
+          openAddTableModal('operand');
+          break;
+        case 'addPrism':
+          openAddTableModal('prism');
+          break;
+        case 'openChat':
+          openChatPanel();
+          break;
+        case 'toggleConveyor':
+          toggleConveyorPanel();
+          break;
+        case 'resetZoom':
+          resetZoom();
+          break;
+        case 'fitView':
+          fitAllTablesInView();
+          break;
+        case 'saveCanvas':
+          saveCanvasState(true);
+          break;
+        case 'transferSelected':
+          if (target.chatTableId) transferChatTableToCanvas(target.chatTableId, 'selected');
+          break;
+        case 'transferAll':
+          if (target.chatTableId) transferChatTableToCanvas(target.chatTableId, 'all');
+          break;
+        case 'selectAllRows':
+          if (target.chatTableId) toggleSelectAllChatRows(target.chatTableId, true);
+          break;
+        case 'unselectAllRows':
+          if (target.chatTableId) toggleSelectAllChatRows(target.chatTableId, false);
+          break;
+      }
+    }
+
+    // Global Right-Click Event Listener
+    document.addEventListener('contextmenu', (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) {
+        return;
+      }
+
+      const rowEl = e.target.closest('tr[data-row-idx]');
+      const cardEl = e.target.closest('.canvas-card');
+      const chatWidgetEl = e.target.closest('[id^="widget-chat_tbl_"]');
+
+      if (rowEl && cardEl) {
+        const tableId = cardEl.id.replace('card-', '');
+        const rowIndex = parseInt(rowEl.getAttribute('data-row-idx'));
+        openContextMenu(e, { type: 'row', tableId, rowIndex });
+        return;
+      }
+
+      if (cardEl) {
+        const tableId = cardEl.id.replace('card-', '');
+        openContextMenu(e, { type: 'card', tableId });
+        return;
+      }
+
+      if (chatWidgetEl) {
+        const chatTableId = chatWidgetEl.id.replace('widget-', '');
+        openContextMenu(e, { type: 'chatWidget', chatTableId });
+        return;
+      }
+
+      if (e.target.closest('#canvasViewport') || e.target === document.body) {
+        openContextMenu(e, { type: 'canvas' });
+        return;
+      }
+    });
+
+    window.addEventListener('click', (e) => {
+      if (!e.target.closest('#customContextMenu')) {
+        closeContextMenu();
+      }
+    });
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeContextMenu();
+    });
+
+    // --- ROW GENERATION MODAL (AI) ---
+    function openRowGenerateModal(tableId) {
+      const t = tables.find(item => item.id === tableId);
+      if (!t) return;
+      rowGenTargetTableId = tableId;
+      document.getElementById('rowGenTargetInfo').innerText = `Таблица: "${t.title}" (${t.headers.join(' | ')})`;
+      document.getElementById('rowUserInstructionInput').value = '';
+      document.getElementById('rowGenerateModal').style.display = 'flex';
+    }
+
+    function closeRowGenerateModal() {
+      document.getElementById('rowGenerateModal').style.display = 'none';
+      rowGenTargetTableId = null;
+    }
+
+    async function submitRowGeneration() {
+      const t = tables.find(item => item.id === rowGenTargetTableId);
+      if (!t) return;
+
+      const model = document.getElementById('rowModelSelect').value;
+      const tokens = parseInt(document.getElementById('rowTokensInput').value) || 300;
+      const instruction = document.getElementById('rowUserInstructionInput').value.trim();
+
+      const btn = document.getElementById('doRowGenBtn');
+      btn.innerText = '⏳ Генерация...';
+      btn.disabled = true;
+
+      try {
+        const payload = {
+          table_id: t.id,
+          table_title: t.title,
+          kind: t.kind,
+          headers: t.headers,
+          existing_rows: t.rows,
+          user_instruction: instruction,
+          model: model,
+          max_tokens: tokens
+        };
+
+        const res = await fetch('/api/generate-row', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) throw new Error(await res.text());
+        const data = await res.json();
+        
+        t.rows.push(data.row);
+        invalidateAnalysis();
+        closeRowGenerateModal();
+        renderCanvas();
+        saveCanvasState();
+        showToast(`✨ Новая строка сгенерирована (${model})!`);
+      } catch (err) {
+        console.error(err);
+        alert('Ошибка генерации: ' + err.message);
+      } finally {
+        btn.innerText = 'Сгенерировать и вставить';
+        btn.disabled = false;
+      }
+    }
+
+    // --- DUCKAI TABLE GENERATOR MODAL & CHECKLIST ---
+    function openGenerateModal() {
+      document.getElementById('generateModal').style.display = 'flex';
+    }
+
+    function closeGenerateModal() {
+      document.getElementById('generateModal').style.display = 'none';
+    }
+
+    async function sendGenerateRequest(feedbackReason = null) {
+      const prompt = document.getElementById('genPromptInput').value.trim();
+      if (!prompt) {
+        alert('Введите тему или описание таблицы!');
+        return;
+      }
+
+      const model = document.getElementById('genModelSelect').value;
+      const tokens = parseInt(document.getElementById('genTokensInput').value) || 1000;
+      const rowsCount = parseInt(document.getElementById('genRowsCountInput').value) || 5;
+      const kind = Array.from(document.getElementsByName('genTableKind')).find(r => r.checked)?.value || 'operand';
+
+      const btn = document.getElementById('doGenerateBtn');
+      btn.innerText = '⏳ DuckAI генерирует...';
+      btn.disabled = true;
+
+      try {
+        const payload = {
+          prompt: prompt,
+          kind: kind,
+          model: model,
+          max_tokens: tokens,
+          rows_count: rowsCount,
+          unwanted_items: Array.from(rejectedRowsSet),
+          feedback_reason: feedbackReason
+        };
+
+        const res = await fetch('/api/generate-table', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) throw new Error(await res.text());
+        const data = await res.json();
+        currentPendingGeneratedTable = data.table;
+
+        renderChecklist(currentPendingGeneratedTable);
+        document.getElementById('checklistSection').style.display = 'block';
+        showToast(`Таблица готова (${model})! Отметьте неподходящие строки при необходимости`);
+      } catch (err) {
+        console.error(err);
+        alert('Ошибка генерации таблицы: ' + err.message);
+      } finally {
+        btn.innerText = 'Сгенерировать таблицу';
+        btn.disabled = false;
+      }
+    }
+
+    function renderChecklist(table) {
+      const container = document.getElementById('generatedChecklist');
+      container.innerHTML = '';
+      rejectedRowsSet.clear();
+      updateUnwantedCount();
+
+      table.rows.forEach((row, idx) => {
+        const itemEl = document.createElement('div');
+        itemEl.className = 'flex items-center gap-2.5 p-2 rounded-md border border-border bg-card text-xs transition-colors';
+        const rowText = row.join(' | ');
+
+        itemEl.innerHTML = `
+          <input type="checkbox" id="chk_${idx}" onchange="toggleRejectRow(${idx}, '${encodeURIComponent(rowText)}')" class="h-4 w-4 rounded-sm border-input text-rose-600 focus:ring-rose-500 cursor-pointer">
+          <label for="chk_${idx}" class="cursor-pointer flex-1 font-medium">
+            <span class="text-muted-foreground mr-1.5">#${idx + 1}</span>
+            <span class="row-label-text">${rowText}</span>
+          </label>
+        `;
+        container.appendChild(itemEl);
+      });
+    }
+
+    function toggleRejectRow(idx, encodedText) {
+      const text = decodeURIComponent(encodedText);
+      const chk = document.getElementById(`chk_${idx}`);
+      const parent = chk.closest('div');
+      const labelText = parent.querySelector('.row-label-text');
+
+      if (chk.checked) {
+        rejectedRowsSet.add(text);
+        parent.classList.add('border-rose-400', 'bg-rose-50', 'dark:bg-rose-950/40');
+        labelText.classList.add('line-through', 'text-rose-600', 'dark:text-rose-400');
+      } else {
+        rejectedRowsSet.delete(text);
+        parent.classList.remove('border-rose-400', 'bg-rose-50', 'dark:bg-rose-950/40');
+        labelText.classList.remove('line-through', 'text-rose-600', 'dark:text-rose-400');
+      }
+      updateUnwantedCount();
+    }
+
+    function updateUnwantedCount() {
+      document.getElementById('unwantedCountText').innerText = `Не подходит: ${rejectedRowsSet.size}`;
+    }
+
+    function regenerateWithFeedback() {
+      if (rejectedRowsSet.size === 0) {
+        alert('Отметьте хотя бы одну строку чек-боксом, которая вам не подходит!');
+        return;
+      }
+      const reason = document.getElementById('feedbackReasonInput').value.trim();
+      sendGenerateRequest(reason);
+    }
+
+    function confirmAndPlaceGeneratedTable() {
+      if (!currentPendingGeneratedTable) return;
+
+      const filteredRows = currentPendingGeneratedTable.rows.filter(row => {
+        const rowText = row.join(' | ');
+        return !rejectedRowsSet.has(rowText);
+      });
+
+      if (filteredRows.length === 0) {
+        alert('Вы исключили все строки! Перегенерируйте таблицу.');
+        return;
+      }
+
+      const maxY = tables.length > 0 ? Math.max(...tables.map(t => t.y)) : 40;
+      const posX = 60;
+      const posY = maxY + 510;
+
+      tables.push({
+        id: currentPendingGeneratedTable.id,
+        title: currentPendingGeneratedTable.title,
+        kind: currentPendingGeneratedTable.kind,
+        x: posX,
+        y: posY,
+        width: 780,
+        height: 480,
+        headers: currentPendingGeneratedTable.headers,
+        rows: filteredRows
+      });
+      invalidateAnalysis();
+
+      activeTableId = currentPendingGeneratedTable.id;
+      closeGenerateModal();
+      renderCanvas();
+      saveCanvasState();
+      showToast('Таблица выгружена на холст!');
+    }
+
+    // --- TYPESAFE JEV ANALYSIS ---
+    async function runTypeSafeAnalysis() {
+      const opTables = tables.filter(t => t.kind === 'operand' && !t.analysis_generated);
+      const prTables = tables.filter(t => t.kind === 'prism');
+
+      if (opTables.length === 0 || prTables.length === 0) {
+        alert('Требуется как минимум 1 Операнд и 1 Призма!');
+        return;
+      }
+
+      const runBtn = document.getElementById('runJevBtn');
+      const analysisRevision = canvasDataRevision;
+      const badge = document.getElementById('conveyorStatusBadge');
+      if (runBtn) {
+        runBtn.innerText = '⏳ Jev строит связи...';
+        runBtn.disabled = true;
+      }
+      if (badge) badge.innerText = 'Анализ...';
+
+      openConveyorPanel();
+
+      try {
+        const payload = { operand_tables: opTables, prism_tables: prTables };
+
+        const res = await fetch('/api/analyze', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) throw new Error(await res.text());
+        const data = await res.json();
+        if (analysisRevision !== canvasDataRevision) {
+          showToast('Данные холста изменились во время анализа. Запустите расчёт ещё раз.');
+          return;
+        }
+        lastAnalysisResult = data;
+
+        tables.forEach(t => {
+          if (data.evaluations_by_table && data.evaluations_by_table[t.id]) {
+            t.evaluations = data.evaluations_by_table[t.id];
+          }
+        });
+
+        jevRowLines = data.row_to_row_lines || [];
+        jevCrossLines = data.inter_operand_lines || [];
+
+        renderCanvas();
+        saveCanvasState();
+        renderConveyorResults(data);
+
+        const normBtn = document.getElementById('normBtn');
+        if (normBtn) normBtn.style.display = 'inline-flex';
+        showToast(`⚡ Jev сформировал ${jevRowLines.length + jevCrossLines.length} связующих линий!`);
+      } catch (err) {
+        console.error(err);
+        alert('Ошибка анализа: ' + err.message);
+      } finally {
+        if (runBtn) {
+          runBtn.innerHTML = '<i data-lucide="zap" class="w-3.5 h-3.5"></i> <span>Сформировать Линии (Jev)</span>';
+          runBtn.disabled = false;
+        }
+        if (badge && analysisRevision === canvasDataRevision) badge.innerText = lastAnalysisResult ? 'Построены' : 'Требуется пересчёт';
+        if (window.lucide) lucide.createIcons();
+      }
+    }
+
+    function applyAutoNormalization() {
+      if (!lastAnalysisResult) return;
+      const topT = lastAnalysisResult.normalized_top_table;
+      const subT = lastAnalysisResult.normalized_sub_table;
+      const maxY = Math.max(...tables.map(t => t.y + getTableCanvasSize(t).height));
+
+      tables.push({ ...topT, analysis_generated: true, x: 50, y: maxY + 50, width: 780, height: 440 });
+      tables.push({ ...subT, analysis_generated: true, x: 860, y: maxY + 50, width: 780, height: 440 });
+
+      invalidateAnalysis();
+      renderCanvas();
+      saveCanvasState();
+      showToast('✨ ТОП-Таблицы выгружены на холст!');
+    }
+
+    function renderConveyorResults(data) {
+      const container = document.getElementById('conveyorContent');
+      let html = '';
+
+      html += `
+        <div class="p-3.5 rounded-lg border border-sky-300 dark:border-sky-800 bg-sky-50 dark:bg-sky-950/40 flex items-center justify-between gap-2">
+          <div class="font-bold text-xs text-sky-700 dark:text-sky-300 uppercase tracking-wider flex items-center gap-1.5">
+            <i data-lucide="network" class="w-4 h-4"></i>
+            Линий Jev: ${jevRowLines.length + jevCrossLines.length}
+          </div>
+          <button onclick="applyAutoNormalization()" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-semibold bg-indigo-600 hover:bg-indigo-700 text-white shadow-xs transition-colors">
+            <i data-lucide="trophy" class="w-3 h-3"></i>
+            <span>Выгрузить ТОПы</span>
+          </button>
+        </div>
+      `;
+
+      if (data.absolute_dominant) {
+        html += `
+          <div class="p-4 rounded-xl border border-emerald-300 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/40 space-y-1">
+            <div class="text-[11px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
+              <i data-lucide="crown" class="w-4 h-4"></i> АБСОЛЮТНАЯ ДОМИНАНТА
+            </div>
+            <div class="text-xs font-semibold text-foreground pt-1">
+              ${data.absolute_dominant.content}
+            </div>
+            <div class="text-[11px] text-muted-foreground">
+              Score: ${data.absolute_dominant.integral_score}/3 (${data.absolute_dominant.table_title})
+            </div>
+          </div>
+        `;
+      }
+
+      html += `
+        <div class="space-y-2 pt-1">
+          <div class="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+            Связанные пары Строка ➔ Строка:
+          </div>
+      `;
+
+      jevRowLines.forEach(l => {
+        html += `
+          <div class="p-3 rounded-lg border border-border bg-card space-y-1">
+            <div class="text-sky-600 dark:text-sky-400 font-semibold">Призма: "${l.prism_criterion_name}"</div>
+            <div class="text-foreground font-medium">➔ Операнд [${l.operand_table_title}]: ${l.operand_content}</div>
+            <div class="text-[11px] text-muted-foreground">Score: ${l.score}/3 | ${l.score_source === 'lexical_fallback' ? 'Резервная лексическая оценка' : 'TypeSafe'}${l.confidence == null ? '' : ` | Conf: ${(l.confidence * 100).toFixed(0)}%`}</div>
+          </div>
+        `;
+      });
+
+      html += `</div>`;
+      container.innerHTML = html;
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function toggleConveyorPanel() {
+      const p = document.getElementById('conveyorPanel');
+      const isOpen = p.classList.contains('open');
+      if (isOpen) {
+        p.classList.remove('open');
+      } else {
+        document.getElementById('chatPanel').classList.remove('open');
+        p.classList.add('open');
+      }
+    }
+    function openConveyorPanel() {
+      document.getElementById('chatPanel').classList.remove('open');
+      document.getElementById('conveyorPanel').classList.add('open');
+    }
+
+    // --- ИНТЕРАКТИВНЫЙ AI ЧАТ-ГЕНЕРАТОР (DUCKAI) ---
+    let chatHistory = [];
+    let chatTablesRegistry = {};
+    let chatRequestPending = false;
+    let chatConversationRevision = 0;
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function toggleChatPanel() {
+      const panel = document.getElementById('chatPanel');
+      const isOpen = panel.classList.contains('open');
+      if (isOpen) {
+        panel.classList.remove('open');
+      } else {
+        document.getElementById('conveyorPanel').classList.remove('open');
+        panel.classList.add('open');
+        setTimeout(() => document.getElementById('chatInput')?.focus(), 150);
+      }
+    }
+
+    function openChatPanel() {
+      document.getElementById('conveyorPanel').classList.remove('open');
+      document.getElementById('chatPanel').classList.add('open');
+      setTimeout(() => document.getElementById('chatInput')?.focus(), 150);
+    }
+
+    function closeChatPanel() {
+      document.getElementById('chatPanel').classList.remove('open');
+    }
+
+    function clearChatMessages() {
+      chatConversationRevision += 1;
+      chatHistory = [];
+      chatTablesRegistry = {};
+      const container = document.getElementById('chatMessagesContainer');
+      container.innerHTML = `
+        <div class="bg-muted/30 border border-border/80 rounded-xl p-3.5 space-y-2 text-foreground">
+          <div class="flex items-center gap-1.5 font-semibold text-xs text-violet-600 dark:text-violet-400">
+            <i data-lucide="sparkles" class="w-4 h-4"></i>
+            Интерактивный аналитический ассистент
+          </div>
+          <p class="text-[11px] text-muted-foreground leading-relaxed">
+            История диалога очищена. Вы можете обсуждать идеи или попросить: <em>«сгенерируй таблицу по теме...»</em>
+          </p>
+        </div>
+      `;
+      if (window.lucide) lucide.createIcons();
+      showToast('История чата очищена');
+    }
+
+    function sendQuickChatMessage(prompt) {
+      const input = document.getElementById('chatInput');
+      input.value = prompt;
+      openChatPanel();
+      handleSendChatMessage();
+    }
+
+    async function copyChatTranscript() {
+      const transcript = chatHistory
+        .filter(message => message.role === 'user' || message.role === 'assistant')
+        .map(message => `${message.role === 'user' ? 'Вы' : 'Ассистент'}:\n${message.content}`)
+        .join('\n\n');
+      if (!transcript) {
+        showToast('В чате пока нет переписки');
+        return;
+      }
+      try {
+        await navigator.clipboard.writeText(transcript);
+      } catch (_) {
+        const helper = document.createElement('textarea');
+        helper.value = transcript;
+        helper.style.position = 'fixed';
+        helper.style.opacity = '0';
+        document.body.appendChild(helper);
+        helper.select();
+        const copied = document.execCommand('copy');
+        helper.remove();
+        if (!copied) {
+          showToast('Не удалось скопировать переписку');
+          return;
+        }
+      }
+      showToast('Переписка скопирована');
+    }
+
+    async function requestChatReply() {
+      if (chatRequestPending) return;
+      chatRequestPending = true;
+      const requestRevision = chatConversationRevision;
+      const sendBtn = document.getElementById('chatSendBtn');
+      const model = document.getElementById('chatModelSelect')?.value || 'gpt-6-luna';
+      sendBtn.disabled = true;
+      sendBtn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i>';
+      if (window.lucide) lucide.createIcons();
+
+      try {
+        const res = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            messages: chatHistory.filter(message => message.role === 'user' || message.role === 'assistant'),
+            model,
+            max_tokens: 1500
+          })
+        });
+        if (!res.ok) {
+          let detail = `HTTP ${res.status}`;
+          try {
+            const rawBody = await res.text();
+            try {
+              const body = JSON.parse(rawBody);
+              detail = body.detail || rawBody || detail;
+            } catch (_) {
+              detail = rawBody || detail;
+            }
+          } catch (_) {
+            // Keep the HTTP status as the actionable fallback.
+          }
+          throw new Error(detail);
+        }
+        const data = await res.json();
+        const reply = typeof data.reply === 'string' ? data.reply.trim() : '';
+        if (!reply) throw new Error('Модель вернула пустой ответ. Нажмите «Повторить».');
+        if (requestRevision === chatConversationRevision) chatHistory.push({ role: 'assistant', content: reply });
+      } catch (err) {
+        console.error(err);
+        if (requestRevision === chatConversationRevision) chatHistory.push({ role: 'error', content: err.message || 'Не удалось получить ответ.' });
+      } finally {
+        chatRequestPending = false;
+        sendBtn.disabled = false;
+        sendBtn.innerHTML = '<i data-lucide="send" class="w-4 h-4"></i>';
+        if (requestRevision === chatConversationRevision) renderChatMessages();
+      }
+    }
+
+    async function retryLastChatRequest() {
+      if (chatRequestPending || chatHistory[chatHistory.length - 1]?.role !== 'error') return;
+      chatHistory.pop();
+      renderChatMessages();
+      await requestChatReply();
+    }
+
+    async function handleSendChatMessage(e) {
+      if (e) e.preventDefault();
+      if (chatRequestPending) return;
+      const input = document.getElementById('chatInput');
+      const text = input.value.trim();
+      if (!text) return;
+
+      input.value = '';
+
+      chatHistory.push({ role: 'user', content: text });
+      renderChatMessages();
+      await requestChatReply();
+    }
+
+    function renderChatMessages() {
+      const container = document.getElementById('chatMessagesContainer');
+      let html = '';
+
+      chatHistory.forEach((msg, idx) => {
+        if (msg.role === 'user') {
+          html += `
+            <div class="flex flex-col items-end">
+              <div class="bg-primary text-primary-foreground rounded-2xl rounded-tr-xs px-3.5 py-2 max-w-[85%] text-xs leading-relaxed shadow-xs">
+                ${escapeHtml(msg.content).replace(/\n/g, '<br>')}
+              </div>
+            </div>
+          `;
+        } else if (msg.role === 'assistant') {
+          html += `
+            <div class="flex flex-col items-start space-y-1">
+              <div class="flex items-center gap-1.5 text-[10px] text-muted-foreground px-1">
+                <i data-lucide="bot" class="w-3 h-3 text-violet-500"></i>
+                <span class="font-semibold">DuckAI</span>
+              </div>
+              <div class="bg-card text-foreground border border-border rounded-2xl rounded-tl-xs px-4 py-3 max-w-[95%] text-xs leading-relaxed shadow-xs space-y-3">
+                ${parseAssistantMessageContent(msg.content, idx)}
+              </div>
+            </div>
+          `;
+        } else if (msg.role === 'error') {
+          html += `
+            <div class="flex flex-col items-start space-y-2">
+              <div class="bg-amber-50 dark:bg-amber-950/30 text-amber-800 dark:text-amber-200 border border-amber-300 dark:border-amber-800 rounded-xl px-3.5 py-2.5 max-w-[95%] text-xs leading-relaxed">${escapeHtml(msg.content)}</div>
+              <button onclick="retryLastChatRequest()" class="inline-flex items-center gap-1.5 rounded-md border border-input bg-background hover:bg-accent px-2.5 py-1.5 text-[11px] font-medium text-foreground"><i data-lucide="rotate-cw" class="w-3 h-3"></i> Повторить запрос</button>
+            </div>
+          `;
+        }
+      });
+
+      container.innerHTML = html;
+      container.scrollTop = container.scrollHeight;
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function parseMarkdownTables(content) {
+      const lines = content.split('\n');
+      const blocks = [];
+      let currentTableLines = [];
+      let currentNonTableLines = [];
+      let inTable = false;
+      let currentTableMeta = { title: '', kind: '' };
+
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        const isTableLine = line.trim().startsWith('|') && line.trim().endsWith('|');
+
+        if (isTableLine) {
+          if (!inTable) {
+            let extractedTitle = '';
+            let extractedKind = '';
+
+            // Извлекаем предшествующий заголовок вида "### 📊 Операнд: ..." или "### 💎 Призма: ..."
+            while (currentNonTableLines.length > 0 && currentNonTableLines[currentNonTableLines.length - 1].trim() === '') {
+              currentNonTableLines.pop();
+            }
+
+            if (currentNonTableLines.length > 0) {
+              const lastLine = currentNonTableLines[currentNonTableLines.length - 1].trim();
+              if (lastLine.startsWith('#') || lastLine.startsWith('**') || lastLine.includes('📊') || lastLine.includes('💎')) {
+                const clean = lastLine.replace(/^#+\s*/, '').replace(/\*+/g, '').trim();
+                extractedTitle = clean;
+                const lower = clean.toLowerCase();
+                if (lower.includes('призм') || lower.includes('критери') || lower.includes('вектор') || lower.includes('💎')) {
+                  extractedKind = 'prism';
+                } else if (lower.includes('операнд') || lower.includes('решен') || lower.includes('вариант') || lower.includes('стратег') || lower.includes('📊')) {
+                  extractedKind = 'operand';
+                }
+                currentNonTableLines.pop(); // Убираем заголовок из обычного текста, чтобы не дублировался
+              }
+            }
+
+            if (currentNonTableLines.length > 0) {
+              blocks.push({ type: 'text', content: currentNonTableLines.join('\n') });
+              currentNonTableLines = [];
+            }
+            inTable = true;
+            currentTableMeta = { title: extractedTitle, kind: extractedKind };
+          }
+          currentTableLines.push(line);
+        } else {
+          if (inTable) {
+            if (currentTableLines.length >= 2) {
+              blocks.push({
+                type: 'table',
+                raw: currentTableLines.join('\n'),
+                title: currentTableMeta.title,
+                kind: currentTableMeta.kind
+              });
+            } else {
+              currentNonTableLines.push(...currentTableLines);
+            }
+            currentTableLines = [];
+            inTable = false;
+            currentTableMeta = { title: '', kind: '' };
+          }
+          currentNonTableLines.push(line);
+        }
+      }
+
+      if (inTable && currentTableLines.length >= 2) {
+        blocks.push({
+          type: 'table',
+          raw: currentTableLines.join('\n'),
+          title: currentTableMeta.title,
+          kind: currentTableMeta.kind
+        });
+      } else if (currentNonTableLines.length > 0) {
+        blocks.push({ type: 'text', content: currentNonTableLines.join('\n') });
+      }
+
+      return blocks;
+    }
+
+    function parseAssistantMessageContent(text, msgIdx) {
+      const blocks = parseMarkdownTables(text);
+      let html = '';
+
+      blocks.forEach((b, bIdx) => {
+        if (b.type === 'text') {
+          const formatted = escapeHtml(b.content)
+            .replace(/\n\n/g, '<br><br>')
+            .replace(/\n/g, '<br>')
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\*(.*?)\*/g, '<em>$1</em>')
+            .replace(/`([^`]+)`/g, '<code class="px-1 py-0.5 rounded bg-muted font-mono text-[11px]">$1</code>');
+          html += `<div class="leading-relaxed">${formatted}</div>`;
+        } else if (b.type === 'table') {
+          const parsedTable = parseContentToTable(b.raw);
+          if (!parsedTable || parsedTable.rows.length === 0) return;
+
+          const chatTableId = `chat_tbl_${msgIdx}_${bIdx}`;
+          let suggestedKind = b.kind;
+          if (!suggestedKind) {
+            let lower = ((b.title || '') + ' ' + parsedTable.headers.join(' ')).toLowerCase();
+            if (lower.includes('призм') || lower.includes('критери') || lower.includes('вектор') || lower.includes('полярн') || lower.includes('💎')) {
+              suggestedKind = 'prism';
+            } else {
+              suggestedKind = 'operand';
+            }
+          }
+
+          let finalTitle = b.title;
+          if (!finalTitle || finalTitle === 'Таблица Markdown') {
+            finalTitle = suggestedKind === 'prism' ? '💎 Призма: Критерии оценки' : '📊 Операнд: Варианты решений';
+          }
+
+          chatTablesRegistry[chatTableId] = {
+            title: finalTitle,
+            kind: suggestedKind,
+            headers: parsedTable.headers,
+            rows: parsedTable.rows
+          };
+
+          html += renderChatTableWidget(chatTableId);
+        }
+      });
+
+      return html;
+    }
+
+    function renderChatTableWidget(chatTableId) {
+      const t = chatTablesRegistry[chatTableId];
+      if (!t) return '';
+
+      let tableHtml = `
+        <div class="my-3 rounded-xl border border-border bg-card shadow-sm overflow-hidden" id="widget-${chatTableId}">
+          <div class="p-2.5 border-b border-border bg-muted/40 flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2 overflow-hidden">
+              <select onchange="updateChatTableKind('${chatTableId}', this.value)" class="h-6 text-[11px] font-semibold rounded border border-input bg-background px-1.5 shadow-2xs">
+                <option value="operand" ${t.kind === 'operand' ? 'selected' : ''}>📊 Операнд</option>
+                <option value="prism" ${t.kind === 'prism' ? 'selected' : ''}>💎 Призма</option>
+              </select>
+              <span contenteditable="true" onblur="updateChatTableTitle('${chatTableId}', this.innerText)" class="font-semibold text-xs text-foreground truncate hover:underline cursor-text">${escapeHtml(t.title)}</span>
+              <span class="text-[11px] text-muted-foreground shrink-0" id="count_${chatTableId}">(${t.rows.length}/${t.rows.length})</span>
+            </div>
+
+            <div class="flex items-center gap-1.5 shrink-0">
+              <button onclick="toggleSelectAllChatRows('${chatTableId}')" class="text-[10px] font-medium px-2 py-0.5 rounded border border-input bg-background hover:bg-accent text-muted-foreground hover:text-foreground">
+                Выбрать все
+              </button>
+            </div>
+          </div>
+
+          <div class="max-h-60 overflow-auto">
+            <table class="w-full text-xs text-left border-collapse">
+              <thead class="sticky top-0 bg-muted/90 backdrop-blur-xs border-b border-border">
+                <tr>
+                  <th class="w-8 text-center p-2"><input type="checkbox" id="chk_all_${chatTableId}" checked onchange="toggleSelectAllChatRows('${chatTableId}', this.checked)" class="h-3.5 w-3.5 rounded border-input cursor-pointer"></th>
+                  ${t.headers.map(h => `<th class="p-2 font-semibold text-muted-foreground text-[10px] uppercase border-r border-border/40">${escapeHtml(h)}</th>`).join('')}
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-border">
+                ${t.rows.map((row, rIdx) => `
+                  <tr class="hover:bg-muted/30 transition-colors" id="row_${chatTableId}_${rIdx}">
+                    <td class="text-center p-2"><input type="checkbox" class="row-chk-${chatTableId} h-3.5 w-3.5 rounded border-input cursor-pointer" data-row-idx="${rIdx}" checked onchange="updateChatRowSelectionCount('${chatTableId}')"></td>
+                    ${row.map(cell => `<td class="p-2 text-foreground border-r border-border/30 leading-snug">${escapeHtml(cell)}</td>`).join('')}
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+
+          <div class="p-2.5 border-t border-border bg-muted/20 flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-1.5">
+              <button onclick="transferChatTableToCanvas('${chatTableId}', 'selected')" class="inline-flex items-center gap-1.5 rounded-md text-xs font-semibold bg-primary text-primary-foreground hover:bg-primary/90 h-7 px-3 shadow-2xs transition-colors">
+                <i data-lucide="layout-grid" class="w-3 h-3"></i>
+                <span>🚀 Перенести на холст</span>
+              </button>
+              <button onclick="transferChatTableToCanvas('${chatTableId}', 'all')" class="inline-flex items-center gap-1 rounded-md text-[11px] font-medium border border-input bg-background hover:bg-accent text-foreground h-7 px-2.5 transition-colors">
+                Целиком
+              </button>
+            </div>
+
+            ${tables.length > 0 ? `
+              <div class="flex items-center gap-1">
+                <span class="text-[10px] text-muted-foreground">или в:</span>
+                <select id="targetTableSelect_${chatTableId}" class="h-7 text-[11px] rounded border border-input bg-background px-1.5 max-w-[130px] truncate shadow-2xs">
+                  ${tables.map(tbl => `<option value="${tbl.id}">${escapeHtml(tbl.title)}</option>`).join('')}
+                </select>
+                <button onclick="appendChatRowsToExistingTable('${chatTableId}')" class="inline-flex items-center gap-1 rounded-md text-[11px] font-medium bg-secondary text-secondary-foreground hover:bg-secondary/80 h-7 px-2 transition-colors" title="Добавить выбранные строки">
+                  <i data-lucide="plus" class="w-3 h-3"></i> Вставить
+                </button>
+              </div>
+            ` : ''}
+          </div>
+        </div>
+      `;
+
+      return tableHtml;
+    }
+
+    function updateChatTableKind(chatTableId, kind) {
+      if (chatTablesRegistry[chatTableId]) {
+        chatTablesRegistry[chatTableId].kind = kind;
+      }
+    }
+
+    function updateChatTableTitle(chatTableId, title) {
+      if (chatTablesRegistry[chatTableId]) {
+        chatTablesRegistry[chatTableId].title = title.trim();
+      }
+    }
+
+    function toggleSelectAllChatRows(chatTableId, forcedState) {
+      const checkboxes = document.querySelectorAll(`.row-chk-${chatTableId}`);
+      const chkAll = document.getElementById(`chk_all_${chatTableId}`);
+      const nextState = (forcedState !== undefined) ? forcedState : !chkAll.checked;
+      chkAll.checked = nextState;
+      checkboxes.forEach(c => c.checked = nextState);
+      updateChatRowSelectionCount(chatTableId);
+    }
+
+    function updateChatRowSelectionCount(chatTableId) {
+      const checkboxes = document.querySelectorAll(`.row-chk-${chatTableId}`);
+      const checkedCount = Array.from(checkboxes).filter(c => c.checked).length;
+      const countEl = document.getElementById(`count_${chatTableId}`);
+      if (countEl) countEl.innerText = `(${checkedCount}/${checkboxes.length})`;
+    }
+
+    function transferChatTableToCanvas(chatTableId, mode = 'selected') {
+      const t = chatTablesRegistry[chatTableId];
+      if (!t) return;
+
+      let chosenRows = [];
+      if (mode === 'all') {
+        chosenRows = t.rows;
+      } else {
+        const checkboxes = document.querySelectorAll(`.row-chk-${chatTableId}`);
+        checkboxes.forEach(c => {
+          if (c.checked) {
+            const idx = parseInt(c.getAttribute('data-row-idx'));
+            if (t.rows[idx]) chosenRows.push(t.rows[idx]);
+          }
+        });
+      }
+
+      if (chosenRows.length === 0) {
+        alert('Выберите хотя бы одну строку для переноса!');
+        return;
+      }
+
+      const newTableId = 'chat_' + Date.now();
+
+      // Оптимальные размеры без внутренних полос прокрутки
+      const colCount = Math.max(1, t.headers.length);
+      const computedWidth = Math.max(520, Math.min(840, colCount * 170 + 60));
+      // Высота: хедер 50px + thead 38px + строки по 42px + отступы
+      const computedHeight = Math.max(220, 50 + 38 + (chosenRows.length * 44) + 16);
+
+      // Расположение side-by-side (Операнды слева, Призмы справа)
+      let targetX = 50;
+      let targetY = 50;
+
+      if (t.kind === 'prism') {
+        const opTables = tables.filter(tbl => tbl.kind === 'operand');
+        if (opTables.length > 0) {
+          const maxOpX = Math.max(...opTables.map(tbl => tbl.x + (tbl.width || 600)));
+          targetX = maxOpX + 70;
+          targetY = opTables[0].y || 50;
+        } else {
+          targetX = 640;
+          targetY = 50;
+        }
+      } else {
+        const opTables = tables.filter(tbl => tbl.kind === 'operand');
+        if (opTables.length > 0) {
+          const maxY = Math.max(...opTables.map(tbl => tbl.y + (tbl.height || 360)));
+          targetY = maxY + 40;
+          targetX = opTables[0].x || 50;
+        } else {
+          targetX = 50;
+          targetY = 50;
+        }
+      }
+
+      const newTable = {
+        id: newTableId,
+        title: t.title,
+        kind: t.kind,
+        x: targetX,
+        y: targetY,
+        width: computedWidth,
+        height: computedHeight,
+        headers: t.headers,
+        rows: chosenRows
+      };
+
+      tables.push(newTable);
+      invalidateAnalysis();
+      activeTableId = newTableId;
+
+      renderCanvas();
+      saveCanvasState();
+
+      // Авто-фокусировка вьюпорта, чтобы не требовалось вручную скроллить холст
+      centerCanvasOnTable(newTable);
+
+      showToast(`✨ Таблица "${t.title}" (${chosenRows.length} строк) перенесена на холст!`);
+    }
+
+    function centerCanvasOnTable(targetTable) {
+      if (!targetTable || !viewport) return;
+      const vw = viewport.clientWidth || window.innerWidth;
+      const vh = viewport.clientHeight || window.innerHeight;
+
+      // Если есть и операнды, и призмы — автоматически вписываем обе группы в видимую область
+      const opTables = tables.filter(tbl => tbl.kind === 'operand');
+      const prTables = tables.filter(tbl => tbl.kind === 'prism');
+
+      if (opTables.length > 0 && prTables.length > 0) {
+        fitAllTablesInView();
+        return;
+      }
+
+      const targetCenterX = targetTable.x + targetTable.width / 2;
+      const targetCenterY = targetTable.y + targetTable.height / 2;
+
+      pan.x = (vw / 2) - (targetCenterX * zoom);
+      pan.y = (vh / 2) - (targetCenterY * zoom);
+      applyCanvasTransform();
+      renderJevLines();
+    }
+
+    function fitAllTablesInView() {
+      if (tables.length === 0 || !viewport) return;
+      const minX = Math.min(...tables.map(t => t.x));
+      const minY = Math.min(...tables.map(t => t.y));
+      const maxX = Math.max(...tables.map(t => t.x + getTableCanvasSize(t).width));
+      const maxY = Math.max(...tables.map(t => t.y + getTableCanvasSize(t).height));
+
+      const totalW = Math.max(300, maxX - minX + 100);
+      const totalH = Math.max(200, maxY - minY + 100);
+
+      const vw = viewport.clientWidth || window.innerWidth;
+      const vh = viewport.clientHeight || window.innerHeight;
+
+      const scaleX = (vw - 80) / totalW;
+      const scaleY = (vh - 80) / totalH;
+      zoom = Math.max(0.4, Math.min(1.0, Math.min(scaleX, scaleY)));
+      const zoomEl = document.getElementById('zoomPercent');
+      if (zoomEl) zoomEl.innerText = `${Math.round(zoom * 100)}%`;
+
+      const centerX = (minX + maxX) / 2;
+      const centerY = (minY + maxY) / 2;
+
+      pan.x = (vw / 2) - (centerX * zoom);
+      pan.y = (vh / 2) - (centerY * zoom);
+      applyCanvasTransform();
+      renderJevLines();
+    }
+
+    function appendChatRowsToExistingTable(chatTableId) {
+      const t = chatTablesRegistry[chatTableId];
+      if (!t) return;
+
+      const targetSel = document.getElementById(`targetTableSelect_${chatTableId}`);
+      if (!targetSel) return;
+      const targetTableId = targetSel.value;
+      const target = tables.find(item => item.id === targetTableId);
+      if (!target) return;
+
+      let chosenRows = [];
+      const checkboxes = document.querySelectorAll(`.row-chk-${chatTableId}`);
+      checkboxes.forEach(c => {
+        if (c.checked) {
+          const idx = parseInt(c.getAttribute('data-row-idx'));
+          if (t.rows[idx]) chosenRows.push(t.rows[idx]);
+        }
+      });
+
+      if (chosenRows.length === 0) {
+        alert('Выберите хотя бы одну строку для добавления!');
+        return;
+      }
+
+      chosenRows.forEach(r => {
+        let normalized = [...r];
+        while (normalized.length < target.headers.length) normalized.push('-');
+        if (normalized.length > target.headers.length) normalized = normalized.slice(0, target.headers.length);
+        target.rows.push(normalized);
+      });
+
+      invalidateAnalysis();
+      renderCanvas();
+      saveCanvasState();
+      showToast(`✨ Добавлено ${chosenRows.length} строк в "${target.title}"!`);
+    }
+
+    // --- THEME SWITCHER ---
+    function toggleTheme() {
+      const html = document.documentElement;
+      const current = html.getAttribute('data-theme');
+      const next = current === 'light' ? 'dark' : 'light';
+      html.setAttribute('data-theme', next);
+      if (next === 'dark') html.classList.add('dark');
+      else html.classList.remove('dark');
+      
+      const themeBtn = document.getElementById('themeBtn');
+      themeBtn.innerHTML = next === 'light' ? '<i data-lucide="moon" class="w-4 h-4"></i>' : '<i data-lucide="sun" class="w-4 h-4"></i>';
+      if (window.lucide) lucide.createIcons();
+      showToast(`Тема: ${next === 'light' ? 'Светлая' : 'Темная'}`);
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      document.getElementById('toastMsg').innerText = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2200);
+    }
+
+    // --- MANUAL TABLE ADD MODAL ---
+    function openAddTableModal(kind = 'operand') {
+      document.getElementById('modalTitleText').innerText = kind === 'prism' ? '💎 Добавить Таблицу-Призму' : '📊 Добавить Таблицу-Операнд';
+      const radios = document.getElementsByName('modalTableKind');
+      radios.forEach(r => r.checked = (r.value === kind));
+      document.getElementById('modalMdInput').value = '';
+      document.getElementById('addModal').style.display = 'flex';
+    }
+
+    function closeAddTableModal() {
+      document.getElementById('addModal').style.display = 'none';
+    }
+
+    function submitAddTableFromModal() {
+      const text = document.getElementById('modalMdInput').value.trim();
+      const kind = Array.from(document.getElementsByName('modalTableKind')).find(r => r.checked)?.value || 'operand';
+      if (!text) {
+        createEmptyTable();
+        closeAddTableModal();
+        return;
+      }
+      const parsed = parseContentToTable(text);
+      if (parsed) {
+        const maxY = tables.length > 0 ? Math.max(...tables.map(t => t.y)) : 40;
+        tables.push({
+          id: 'manual_' + Date.now(),
+          title: parsed.title,
+          kind: kind,
+          x: 60,
+          y: maxY + 500,
+          width: 780,
+          height: 480,
+          headers: parsed.headers,
+          rows: parsed.rows
+        });
+        invalidateAnalysis();
+        closeAddTableModal();
+        renderCanvas();
+        saveCanvasState();
+        showToast('Таблица добавлена на канвас!');
+      }
+    }
+
+    function createEmptyTable() {
+      const kind = Array.from(document.getElementsByName('modalTableKind')).find(r => r.checked)?.value || 'operand';
+      const maxY = tables.length > 0 ? Math.max(...tables.map(t => t.y)) : 40;
+      tables.push({
+        id: 'manual_' + Date.now(),
+        title: kind === 'prism' ? `Призма Градаций #${tables.length + 1}` : `Операнд #${tables.length + 1}`,
+        kind: kind,
+        x: 60,
+        y: maxY + 500,
+        width: 780,
+        height: 480,
+        headers: kind === 'prism' ? ['Критерий-Градация', 'Вектор', 'Условие'] : ['Решение', 'Категория', 'Принцип'],
+        rows: [
+          ['Пункт 1', 'Категория A', 'Описание 1'],
+          ['Пункт 2', 'Категория B', 'Описание 2']
+        ]
+      });
+      invalidateAnalysis();
+      closeAddTableModal();
+      renderCanvas();
+      saveCanvasState();
+      showToast('Создана пустая таблица');
+    }
+
+    // --- LOCALSTORAGE & EXPORT/IMPORT ---
+    function saveCanvasState(showMessage = false) {
+      try {
+        const state = {
+          tables: tables,
+          pan: pan,
+          zoom: zoom,
+          activeTableId: activeTableId,
+          jevRowLines: jevRowLines,
+          jevCrossLines: jevCrossLines,
+          savedAt: new Date().toISOString()
+        };
+        localStorage.setItem('prism_table_studio_state', JSON.stringify(state));
+        if (showMessage) showToast('💾 Сохранено в браузере');
+      } catch (e) {
+        console.warn('LocalStorage save failed:', e);
+      }
+    }
+
+    function loadCanvasState() {
+      try {
+        const saved = localStorage.getItem('prism_table_studio_state');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed.tables && Array.isArray(parsed.tables) && parsed.tables.length > 0) {
+            tables = normalizeCanvasTables(parsed.tables);
+            if (parsed.pan && typeof parsed.pan === 'object') {
+              pan = { x: finiteCanvasCoordinate(parsed.pan.x, 40), y: finiteCanvasCoordinate(parsed.pan.y, 30) };
+            }
+            if (Number.isFinite(Number(parsed.zoom)) && Number(parsed.zoom) > 0) {
+              zoom = Math.max(0.2, Math.min(2.5, Number(parsed.zoom)));
+            }
+            if (parsed.activeTableId) activeTableId = parsed.activeTableId;
+            if (parsed.jevRowLines) jevRowLines = parsed.jevRowLines;
+            if (parsed.jevCrossLines) jevCrossLines = parsed.jevCrossLines;
+            return true;
+          }
+        }
+      } catch (e) {
+        console.warn('LocalStorage load failed:', e);
+      }
+      return false;
+    }
+
+    function resetToDefaultTables() {
+      if (confirm('Сбросить холст к исходным демонстрационным таблицам? Все несохраненные изменения будут перезаписаны.')) {
+        localStorage.removeItem('prism_table_studio_state');
+        location.reload();
+      }
+    }
+
+    function exportTablesJson() {
+      const exportData = {
+        version: '1.0',
+        exportedAt: new Date().toISOString(),
+        tables: tables,
+        jevRowLines: jevRowLines,
+        jevCrossLines: jevCrossLines,
+        lastAnalysisResult: lastAnalysisResult
+      };
+      const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `prism_canvas_${Date.now()}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('📥 Проект скачан в JSON');
+    }
+
+    function exportCanvasMarkdown() {
+      let md = '# Аналитические Таблицы Prism Studio\n\n';
+      tables.forEach(t => {
+        md += `## ${t.kind === 'prism' ? '💎 Призма' : '📊 Операнд'}: ${t.title}\n\n`;
+        md += '| ' + t.headers.join(' | ') + ' |\n';
+        md += '| ' + t.headers.map(() => '---').join(' | ') + ' |\n';
+        t.rows.forEach(r => {
+          md += '| ' + r.join(' | ') + ' |\n';
+        });
+        md += '\n';
+      });
+
+      if (jevRowLines.length > 0) {
+        md += '## ⚡ Связующие Линии Jev (Строка к Строке)\n\n';
+        md += '| Критерий Призмы | Таблица Операнда | Строка / Решение | Score | Доверие |\n';
+        md += '| --- | --- | --- | --- | --- |\n';
+        jevRowLines.forEach(l => {
+          md += `| ${l.prism_criterion_name} | ${l.operand_table_title} | ${l.operand_content} | ${l.score}/3 | ${(l.confidence * 100).toFixed(0)}% |\n`;
+        });
+        md += '\n';
+      }
+
+      const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `prism_analysis_${Date.now()}.md`;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('📄 Выгружено в Markdown');
+    }
+
+    function triggerImportJson() {
+      document.getElementById('importJsonFileInput').click();
+    }
+
+    function handleImportJsonFile(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const data = JSON.parse(e.target.result);
+          if (data.tables && Array.isArray(data.tables)) {
+            tables = normalizeCanvasTables(data.tables);
+            jevRowLines = data.jevRowLines || [];
+            jevCrossLines = data.jevCrossLines || [];
+            lastAnalysisResult = data.lastAnalysisResult || null;
+            if (tables.length > 0) activeTableId = tables[0].id;
+            renderCanvas();
+            saveCanvasState();
+            showToast('📂 Проект импортирован!');
+          } else {
+            alert('Неверный формат JSON: не найден массив "tables"');
+          }
+        } catch (err) {
+          alert('Ошибка чтения файла: ' + err.message);
+        }
+      };
+      reader.readAsText(file);
+      event.target.value = '';
+    }
+
+    async function fetchAvailableModels() {
+      try {
+        const res = await fetch('/api/models');
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data.models && Array.isArray(data.models)) {
+          const genSel = document.getElementById('genModelSelect');
+          const rowSel = document.getElementById('rowModelSelect');
+          const optionsHtml = data.models.map(m => {
+            const icon = m.id.includes('claude') ? '🧠' : m.id.includes('mistral') ? '🌪' : m.id.includes('gemma') ? '💎' : m.id.includes('oss') ? '🛡' : '⚡';
+            return `<option value="${m.id}">${icon} ${m.name}</option>`;
+          }).join('');
+          if (genSel) genSel.innerHTML = optionsHtml;
+          if (rowSel) rowSel.innerHTML = optionsHtml;
+          const chatSel = document.getElementById('chatModelSelect');
+          if (chatSel) chatSel.innerHTML = optionsHtml;
+        }
+      } catch (err) {
+        console.warn('Failed to fetch models dynamically:', err);
+      }
+    }
+
+    document.getElementById('chatInput')?.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        handleSendChatMessage();
+      }
+    });
+
+    // --- ИНИЦИАЛИЗАЦИЯ ХОЛСТА ---
+    const op1Parsed = parseContentToTable(initialOperand1Markdown);
+    const prParsed = parseContentToTable(initialPrismMarkdown);
+
+    const defaultInitialTables = [
+      {
+        id: 'table_op_1',
+        title: 'Операнд А: Модели и Стратегии Риска',
+        kind: 'operand',
+        x: 50,
+        y: 60,
+        width: 780,
+        height: 480,
+        headers: op1Parsed.headers,
+        rows: op1Parsed.rows
+      },
+      {
+        id: 'table_pr_1',
+        title: 'Призма Градаций: Более выгодно / Сильнее / Стабильнее',
+        kind: 'prism',
+        x: 870,
+        y: 60,
+        width: 780,
+        height: 480,
+        headers: prParsed.headers,
+        rows: prParsed.rows
+      }
+    ];
+
+    if (!loadCanvasState()) {
+      tables = defaultInitialTables;
+      activeTableId = tables[0].id;
+    }
+
+    fetchAvailableModels();
+    applyCanvasTransform();
+    renderCanvas();
+    if (window.lucide) lucide.createIcons();
+    window.addEventListener('DOMContentLoaded', () => {
+      if (window.lucide) lucide.createIcons();
+    });
+  </script>
+</body>
+</html>
